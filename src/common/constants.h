@@ -1,0 +1,15 @@
+#ifndef SO_TP_CONSTANTS_H
+#define SO_TP_CONSTANTS_H
+
+
+
+#define MAX_PLAYERS 5
+
+
+#define GENERAL_PIPE "TP_SO_2023_24_GENERAL_PIPE"
+
+
+
+
+
+#endif
