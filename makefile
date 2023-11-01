@@ -15,6 +15,6 @@ all: jogoUI motor
 
 
 clean:
-	rm $(COMP)/*.o
+	rm $(comp_dir)/*.o
 	echo "Cleaned!"
 	sleep 2
