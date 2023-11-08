@@ -21,7 +21,7 @@
 
 // Additional Constants
 #define MAX_PLAYER_NAME 30
-
+#define MAX_BOT_NAME 30
 
 #define GENERAL_PIPE "TP_SO_2023_24_GENERAL_PIPE"
 

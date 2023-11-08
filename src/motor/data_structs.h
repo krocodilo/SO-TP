@@ -4,6 +4,14 @@
 
 #include "../common/constants.h"
 
+typedef struct {
+    int x;
+    int y;
+} MobileBlock;
+
+typedef struct {
+    char name[MAX_BOT_NAME];
+} Bot;
 
 typedef struct {
     char username[MAX_PLAYER_NAME];
@@ -13,7 +21,9 @@ typedef struct {
 
 typedef struct {
     Player players[MAX_PLAYERS];
+    Bot bots[MAX_BOTS];
     int nPlayers;
+    int nBots;
 } Game;
 
 
