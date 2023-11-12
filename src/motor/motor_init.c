@@ -33,7 +33,7 @@ int create_and_open(char* pipename, int flags)
 }
 
 
-void new_game(Game* game) {
+void resetGame(Game* game) {
     game->nPlayers = 0;
     game->nBots = 0;
     game->pipegen_fd = 0;

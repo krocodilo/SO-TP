@@ -183,7 +183,7 @@ int main() {
     GameSettings gameSettings;
     Game newGame;
     game = &newGame;    // save current game to global game variable
-    game->pipegen_fd = 0;
+    resetGame(game);
 
     // Read Environment Variables
 //    if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE ){
