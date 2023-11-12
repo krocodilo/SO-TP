@@ -4,7 +4,7 @@ src_dir = src
 
 
 jogoUI:
-	gcc $(src_dir)/jogoUI/jogoUI.c -o $(bin_dir)/jogoUI
+	gcc $(src_dir)/jogoUI/jogoUI.c -o $(bin_dir)/jogoUI -lncurses
 	chmod +X $(bin_dir)/jogoUI
 
 motor:

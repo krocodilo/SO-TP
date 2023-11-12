@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <string.h>
-#include "/home/hugosecure/Secretária/TP SO/SO-TP/src/motor/data_structs.h"
+#include "../motor/data_structs.h"
 
 #define MAX_NAME_LENGTH 50
 #define MAX_COMMAND_LENGTH 50
@@ -132,77 +132,6 @@ void processCommand(Game *game, char *command) {
         exit(0);
     }
 
-    else if (strcmp(command, "users") == 0) {
-        /*
-        printf("Lista de Jogadores Ativos:\n");
-        for (int i = 0; i < game->nPlayers; i++) {
-            printf("- %s\n", game->players[i].name);
-        }*/
-        executeCommand(command,&centeredWin, height, width);
-    }
-
-    else if (strncmp(command, "kick", 4) == 0) {
-
-    char *token = strtok(command, " ");
-    char *targetName = strtok(NULL, " ");
-    char *aux;
-
-    if (targetName != NULL) {
-
-        aux = (char *)malloc(strlen(targetName) + strlen(" banido") + 1);
-        strcpy(aux,targetName);
-        strcat(aux," banido");
-        executeCommand(aux,&centeredWin, height, width);
-
-        /*
-    // Encontrar o jogador
-    int playerIndex = -1;
-    for (int i = 0; i < game->nPlayers; i++) {
-    if (strcmp(targetName, game->players[i].name) == 0) {
-    playerIndex = i;
-    break;
-    }
-    }
-
-    if (playerIndex != -1) {*/
-    // Informar o jogador
-        /*
-    mvprintw(12, 0, "Jogador %s foi banido.", targetName);
-    // Terminar o programa jogoUI do jogador
-    //endwin();
-    exit(0);*/
-        free(aux);
-    }
-    else {
-    //mvprintw(12, 0, "Erro: Utilizador %s não encontrado.", targetName);
-
-        executeCommand("kick <nome do jogador>",&centeredWin, height, width);
-    }
-
-
-
-    }
-
-    else if (strcmp(command, "bots") == 0) {
-        //listBots(game);
-        executeCommand(command,&centeredWin, height, width);
-    }
-
-    else if (strcmp(command, "bmov") == 0) {
-        executeCommand(command,&centeredWin, height, width);
-    }
-
-    else if (strcmp(command, "rbm") == 0) {
-        executeCommand(command,&centeredWin, height, width);
-    }
-
-    else if (strcmp(command, "begin") == 0) {
-        executeCommand(command,&centeredWin, height, width);
-    }
-
-    else if (strcmp(command, "end") == 0) {
-        executeCommand(command,&centeredWin, height, width);
-    }
 
     else
     {
@@ -211,18 +140,6 @@ void processCommand(Game *game, char *command) {
 
 
 }
-
-/*
-void listBots(Game *game) {
-    if (game->nBots == 0) {
-        mvprintw(18, 0, "Não há bots ativos no momento.");
-    } else {
-        mvprintw(18, 0, "Lista de Bots Ativos:\n");
-        for (int i = 0; i < game->nBots; i++) {
-            mvprintw(19 + i, 0, "- %s", game->bots[i].name);
-        }
-    }
-}*/
 
 int main(int argc, char *argv[]) {
     Player activePlayers[MAX_ACTIVE_PLAYERS];
