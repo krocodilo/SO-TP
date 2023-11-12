@@ -10,12 +10,17 @@
 #include <signal.h>
 #include <string.h>
 #include <time.h>
+#include <sys/wait.h>
 
+#include "data_structs.h"
 #include "../common/constants.h"
 #include "motor_init.h"
 
+#define MAX_COMMAND_LENGTH 50
+
 
 int exitcode = EXIT_SUCCESS;
+Game* game;  // has to be a global variable to be accessed by the signal handler
 
 
 #endif

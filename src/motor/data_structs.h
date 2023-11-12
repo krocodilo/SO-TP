@@ -18,11 +18,13 @@ typedef struct {
     int fd_pipe;
 } Player;
 
+
 typedef struct {
     Player players[MAX_PLAYERS];
     Bot bots[MAX_BOTS];
     int nPlayers;
     int nBots;
+    int pipegen_fd; // file descriptor for general pipe
 } Game;
 
 
