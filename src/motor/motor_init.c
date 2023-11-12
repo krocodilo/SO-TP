@@ -32,9 +32,12 @@ int create_and_open(char* pipename, int flags)
     return pipe_fd;
 }
 
-//void new_game(Game* game) {
-//    game->
-//}
+
+void new_game(Game* game) {
+    game->nPlayers = 0;
+    game->nBots = 0;
+    game->pipegen_fd = 0;
+}
 
 
 int readEnvironmentVariables(GameSettings* gs){

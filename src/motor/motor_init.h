@@ -13,6 +13,7 @@
 #include "data_structs.h"
 
 int create_and_open(char* pipename, int flags);
+void new_game(Game* game);
 int readEnvironmentVariables(GameSettings* gs);
 
 #endif
