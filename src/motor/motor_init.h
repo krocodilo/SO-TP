@@ -10,6 +10,9 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+#include "data_structs.h"
+
 int create_and_open(char* pipename, int flags);
+int readEnvironmentVariables(GameSettings* gs);
 
 #endif

@@ -24,6 +24,7 @@ typedef struct {
     Bot bots[MAX_BOTS];
     int nPlayers;
     int nBots;
+    int pipegen_fd; // file descriptor for general pipe
 } Game;
 
 

@@ -4,9 +4,14 @@
 
 void terminate(int signum){
     if (signum == SIGINT){
+        printf("\nReceived SIGINT.");
         exit(exitcode);
     }
-//    else
+    printf("\nTerminating...\n");
+    if(game->pipegen_fd > 0)
+        close(game->pipegen_fd);
+    unlink(GENERAL_PIPE);
+    exit(exitcode);
 }
 
 
@@ -107,7 +112,7 @@ void readMaps() {
 }
 
 
-int processAdminCommand(char *adminCommand, Game *game, GameSettings *gameSettings) {
+int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
 
     if (strcmp(adminCommand, "run_bots") == 0) {
         runBots(game);
@@ -173,12 +178,45 @@ int processAdminCommand(char *adminCommand, Game *game, GameSettings *gameSettin
     return 0;
 }
 
+
 int main() {
-    Game game;
     GameSettings gameSettings;
+    Game newGame;
+    game = &newGame;    // save current game to global game variable
+    game->pipegen_fd = 0;
 
+    // Read Environment Variables
+    if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE ){
+        exitcode = EXIT_FAILURE;
+        terminate(0);
+    }
+
+    // Register signal handler
+    signal(SIGINT, terminate);
+
+    // Create and open general pipe
+    game->pipegen_fd = create_and_open(GENERAL_PIPE, O_RDWR);
+
+    if (game->pipegen_fd == -1){
+        perror("\nERRO: nao foi possivel abrir o mecanismo de comunicacao (pipe) geral.\n");
+        exitcode = EXIT_FAILURE; terminate(0);
+    } else if (game->pipegen_fd == -2) {
+        printf("\nJa existe uma instancia do Motor a executar! So e permitido uma!\n");
+        exitcode = EXIT_FAILURE; terminate(0);
+    } else if (game->pipegen_fd == -3) {
+        perror("\nERRO: falha ao criar o mecanismo de comunicacao (pipe) geral.\n");
+        exitcode = EXIT_FAILURE; terminate(0);
+    }
+
+    printf("\n%d", gameSettings.signupWindowDurationSeconds);
+    printf("\n%d", gameSettings.firstLevelDurationSeconds);
+    printf("\n%d", gameSettings.levelDurationDecreaseSeconds);
+    printf("\n%d", gameSettings.minPlayers);
+
+    terminate(0);
+
+    // Commands
     char adminCommand[50];
-
     while (1) {
 
         printf("Insira um comando do administrador: ");
@@ -186,39 +224,11 @@ int main() {
         adminCommand[strcspn(adminCommand, "\n")] = '\0';  // Remova a nova linha
 
         // Processa o comando do administrador
-        if( processAdminCommand(adminCommand, &game, &gameSettings) == -1)
+        if( processAdminCommand(adminCommand, &gameSettings) == -1)
             break;
     }
 
+    terminate(0);
     return 0;
 }
 
-
-
-
-
-//int main(){
-//
-//    int pipegen_fd = create_and_open(GENERAL_PIPE, 077);;
-//
-//    // Pick one
-//
-//    // Create and open general pipe
-//    if (mkfifo(GENERAL_PIPE, 0777) == 0){
-//        //do nothing
-//    }else if (errno == EEXIST){
-//        printf("Ja existe uma instancia Arbitro a executar! So e permitido uma!");
-//        exitcode = EXIT_FAILURE; terminate(0);
-//    }else{
-//        perror("\nERRO: falha ao criar o processo de comunicacao com os clientes");
-//        exitcode = EXIT_FAILURE; terminate(0);
-//    }
-//
-//    pipegen_fd = open(GENERAL_PIPE, O_RDWR);
-//    if (pipegen_fd == -1){
-//        fprintf(stderr, "\nERRO: nao foi possivel abrir o mecanismo de comunicacao geral com os clientes.\n");
-//        exitcode = EXIT_FAILURE; terminate(0);
-//    }
-//
-//    return 0;
-//}
