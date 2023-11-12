@@ -186,10 +186,10 @@ int main() {
     game->pipegen_fd = 0;
 
     // Read Environment Variables
-    if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE ){
-        exitcode = EXIT_FAILURE;
-        terminate(0);
-    }
+//    if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE ){
+//        exitcode = EXIT_FAILURE;
+//        terminate(0);
+//    }
 
     // Register signal handler
     signal(SIGINT, terminate);
@@ -208,12 +208,6 @@ int main() {
         exitcode = EXIT_FAILURE; terminate(0);
     }
 
-    printf("\n%d", gameSettings.signupWindowDurationSeconds);
-    printf("\n%d", gameSettings.firstLevelDurationSeconds);
-    printf("\n%d", gameSettings.levelDurationDecreaseSeconds);
-    printf("\n%d", gameSettings.minPlayers);
-
-    terminate(0);
 
     // Commands
     char adminCommand[50];
