@@ -2,6 +2,35 @@
 
 
 
+void mostra_mapa(const char *filename) {
+    char filepath[100];  // Ajuste o tamanho conforme necessário
+    snprintf(filepath, sizeof(filepath), "../src/jogoUI/%s", filename);
+
+    FILE *file = fopen(filepath, "r");
+    if (file == NULL) {
+        perror("Erro ao abrir o arquivo de mapa");
+        return;
+    }
+
+    char map[MAP_LINES][MAP_COLS + 1];  // +1 para o caractere nulo no final de cada linha
+
+    // Lê o arquivo e armazena o mapa em uma matriz
+    int i = 0;
+    while (i < MAP_LINES && fgets(map[i], sizeof(map[i]), file) != NULL) {
+        // Remove a nova linha do final de cada linha lida
+        map[i][strcspn(map[i], "\n")] = '\0';
+
+        // Ignora linhas em branco
+        if (map[i][0] != '\0') {
+            printf("%s\n", map[i]);
+            i++;
+        }
+    }
+
+    fclose(file);
+}
+
+
 void terminate(int signum){
     if (signum == SIGINT){
         printf("\nReceived SIGINT.");
@@ -13,7 +42,6 @@ void terminate(int signum){
     unlink(GENERAL_PIPE);
     exit(exitcode);
 }
-
 
 volatile sig_atomic_t adminMessageEnabled = 1;
 
@@ -101,15 +129,15 @@ void testBot(Game *game) {
     adminMessageEnabled = 1;
 
 }
-
+/*
 void readMaps() {
     adminMessageEnabled = 0;
 
-    printf("Lendo mapas...\n");
+    mostra_mapa("labirinto.txt");
 
     adminMessageEnabled = 1;
 
-}
+}*/
 
 
 int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
@@ -117,7 +145,7 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
     if (strcmp(adminCommand, "run_bots") == 0) {
         runBots(game);
     } else if (strcmp(adminCommand, "read_maps") == 0) {
-        readMaps();
+        mostra_mapa("labirinto.txt");
     } else if (strcmp(adminCommand, "test_bot") == 0) {
         testBot(game);
 
