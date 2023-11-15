@@ -82,6 +82,8 @@ void runBots(Game *game) {
 void testBot(Game *game) {
     adminMessageEnabled = 0;
 
+    runBots(game);
+    
     if (game->nBots > 0) {
         // Seleciona o primeiro bot para teste (índice 0)
         Bot *bot = &game->bots[0];
