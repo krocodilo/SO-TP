@@ -103,12 +103,14 @@ void processCommand(Game *game, char *command) {
     }else
 
     if (strncmp(command, "msg", 3) == 0) {
+        char* cmdCopy = strdup(command);    // apenas para meta 1
 
-        char *token = strtok(command, " ");
+
+        char *cmd = strtok(command, " ");
         char *targetName = strtok(NULL, " ");
         char *message = strtok(NULL, "");
 
-        if (targetName != NULL && message != NULL)  {
+        if (targetName != NULL && message != NULL) {
             /*
            // Validar se o nome do destinatário existe
             if (validatePlayerName(game->players, game->nPlayers, targetName)) {
@@ -116,7 +118,7 @@ void processCommand(Game *game, char *command) {
             } else {
                 mvprintw(12, 0, "Erro: Utilizador %s não encontrado.", targetName);
             }*/
-            executeCommand(command,&centeredWin, height, width);
+            executeCommand(cmdCopy,&centeredWin, height, width);
         }
         else
         {
@@ -128,6 +130,7 @@ void processCommand(Game *game, char *command) {
 
     else
     if (strcmp(command, "exit") == 0) {
+        // TODO: avisar motor e sair ordeiramente
         endwin();
         exit(0);
     }
@@ -135,7 +138,7 @@ void processCommand(Game *game, char *command) {
 
     else
     {
-        executeCommand("invalido",&centeredWin, height, width);
+        executeCommand("Comando invalido!",&centeredWin, height, width);
     }
 
 

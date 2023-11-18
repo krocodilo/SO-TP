@@ -2,6 +2,25 @@
 
 
 
+void terminate(int signum){
+//    if (signum == SIGINT){
+//        printf("\nReceived SIGINT.");
+//    }
+    printf("\nTerminating...\n");
+
+    // Terminate all bots
+    for( ;game->nBots > 0; game->nBots-- )
+        kill(game->bots[game->nBots-1].pid, SIGTERM);
+
+    // Close all named pipes
+    if(game->pipegen_fd > 0)
+        close(game->pipegen_fd);
+    unlink(GENERAL_PIPE);
+
+    exit(exitcode);
+}
+
+
 void mostra_mapa(const char *filename) {
     char filepath[100];  // Ajuste o tamanho conforme necessário
     snprintf(filepath, sizeof(filepath), "../src/jogoUI/%s", filename);
@@ -31,28 +50,8 @@ void mostra_mapa(const char *filename) {
 }
 
 
-void terminate(int signum){
-    if (signum == SIGINT){
-        printf("\nReceived SIGINT.");
-        exit(exitcode);
-    }
-    printf("\nTerminating...\n");
-    if(game->pipegen_fd > 0)
-        close(game->pipegen_fd);
-    unlink(GENERAL_PIPE);
-    exit(exitcode);
-}
-
-volatile sig_atomic_t adminMessageEnabled = 1;
-
-void handleSIGUSR1(int signum) {
-    adminMessageEnabled = 1;
-}
-
 
 void runBots(Game *game) {
-
-    adminMessageEnabled = 0;
 
     if (game->nBots < MAX_BOTS) {
         Bot newBot;
@@ -68,6 +67,7 @@ void runBots(Game *game) {
             exit(1);
         } else if (pid > 0) {
             // Processo pai
+            newBot.pid = pid;
             game->bots[game->nBots++] = newBot;
             printf("Bot lançado: %s\n", newBot.name);
         } else {
@@ -76,11 +76,9 @@ void runBots(Game *game) {
     } else {
         printf("Limite de bots alcançado\n");
     }
-    adminMessageEnabled = 1;
 }
 
 void testBot(Game *game) {
-    adminMessageEnabled = 0;
 
     runBots(game);
     
@@ -128,7 +126,6 @@ void testBot(Game *game) {
     } else {
         printf("Nenhum bot disponível para teste\n");
     }
-    adminMessageEnabled = 1;
 
 }
 /*
@@ -146,12 +143,13 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
 
     if (strcmp(adminCommand, "run_bots") == 0) {
         runBots(game);
-    } else if (strcmp(adminCommand, "read_maps") == 0) {
+    } else if (strcmp(adminCommand, "read_map") == 0) {
         mostra_mapa("labirinto.txt");
     } else if (strcmp(adminCommand, "test_bot") == 0) {
         testBot(game);
 
     }
+
 
     else if (strcmp(adminCommand, "users") == 0) {
         printf("\nComando \"users\"\n");
@@ -161,10 +159,10 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
 
         char *token = strtok(adminCommand, " ");
         char *targetName = strtok(NULL, " ");
-        char *aux;
 
         if (targetName != NULL) {
 
+            char *aux;
             aux = (char *)malloc(strlen(targetName) + strlen(" banido") + 1);
             strcpy(aux,targetName);
             strcat(aux," banido");
@@ -176,9 +174,6 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
         else {
             printf("\nkick <nome do jogador>\n");
         }
-
-
-
     }
 
     else if (strcmp(adminCommand, "bots") == 0) {
@@ -198,7 +193,6 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
     }
 
     else if (strcmp(adminCommand, "end") == 0) {
-        printf("\nComando \"end\"\n");
         return -1;
     }
 
@@ -223,6 +217,7 @@ int main() {
 
     // Register signal handler
     signal(SIGINT, terminate);
+    signal(SIGTERM, terminate);
 
     // Create and open general pipe
     game->pipegen_fd = create_and_open(GENERAL_PIPE, O_RDWR);

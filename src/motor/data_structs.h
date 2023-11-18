@@ -11,6 +11,7 @@ typedef struct {
 
 typedef struct {
     char name[MAX_BOT_NAME];
+    pid_t pid;
 } Bot;
 
 typedef struct {
