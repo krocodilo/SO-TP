@@ -9,8 +9,10 @@ void terminate(int signum){
     printf("\nTerminating...\n");
 
     // Terminate all bots
-    for( ;game->nBots > 0; game->nBots-- )
+    for( ;game->nBots > 0; game->nBots-- ){
         kill(game->bots[game->nBots-1].pid, SIGTERM);
+//        wait(???); // esperar que os bots terminem
+    }
 
     // Close all named pipes
     if(game->pipegen_fd > 0)
@@ -22,6 +24,12 @@ void terminate(int signum){
 
 
 void mostra_mapa(const char *filename) {
+
+
+    // TODO: Tentar ler apenas o ficheiro sem verificações, para resolver o problema que le apenas metade
+
+
+
     char filepath[100];  // Ajuste o tamanho conforme necessário
     snprintf(filepath, sizeof(filepath), "../src/jogoUI/%s", filename);
 
@@ -80,11 +88,19 @@ void runBots(Game *game) {
 
 void testBot(Game *game) {
 
-    runBots(game);
+
+
+
+    // TODO: Esta função já não será necessária para a meta 2, mas tem codigo que tem de ser aplicado à runBots()
+
+
+
+
+//    runBots(game);
     
-    if (game->nBots > 0) {
+    if (game->nBots == 0) {
         // Seleciona o primeiro bot para teste (índice 0)
-        Bot *bot = &game->bots[0];
+//        Bot *bot = &game->bots[0];
 
         // Cria um pipe para comunicação entre o motor e o bot
         int pipe_fd[2];

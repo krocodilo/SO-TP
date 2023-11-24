@@ -8,6 +8,20 @@ typedef struct {
     int x;
     int y;
 } MobileBlock;
+    // TODO - precisamos de outra struct similar para as rochas, enquanto que esta é apenas para os bloqueios moveis
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 typedef struct {
     char name[MAX_BOT_NAME];
