@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include "../motor/data_structs.h"
 
 #define MAX_NAME_LENGTH 50
@@ -32,6 +33,17 @@ struct p{
     int y;
     char symbol;
 };
+
+
+// Função para verificar se há colisão na próxima posição
+bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
+    // Ajusta as coordenadas do jogador para corresponder ao mapeamento no mapa
+    int playerMapY = nextY - 1;
+    int playerMapX = nextX / 2;
+
+    // Verifica se a próxima posição contém 'X' (obstáculo)
+    return mapa[playerMapY][playerMapX] == 'X';
+}
 
 // Função para inicializar o personagem
 Character initCharacter(int x, int y, char symbol) {
@@ -601,32 +613,52 @@ void controloTeclas(Game *game) {
 
         switch (ch) {
             case KEY_UP:
-                if (mapa.map[player.y - 1][player.x] != 'X') {
-                (player.y)--;
-                mostraMapa(mapawin, 18, 81, &player);
+                
+                if (!verificaColisao(mapa.map, player.y - 1, player.x) &&
+                ((player.y-1) > 1) && 
+                ((player.x) > 1) && 
+                ((player.y-1) < 16) && 
+                ((player.x) < 79)) 
+                {          	   
+                    (player.y)--;
+                    mostraMapa(mapawin, 18, 81, &player);
                 }
                 break;
 	    case KEY_DOWN:
-		if (mapa.map[player.y + 1][player.x] != 'X') {
+		if (!verificaColisao(mapa.map, player.y + 1, player.x) &&
+		((player.y+1) > 1) && 
+                ((player.x) > 1) && 
+                ((player.y+1) < 16) && 
+                ((player.x) < 79)) 
+                {
 		    (player.y)++;
 		    mostraMapa(mapawin, 18, 81, &player);
 		}
 		break;
 	    case KEY_LEFT:
-		if (mapa.map[player.y][player.x - 2] != 'X') {
+		if (!verificaColisao(mapa.map, player.y, player.x - 1) &&
+		((player.y) > 1)&& 
+                ((player.x-2) > 1) && 
+                ((player.y) < 16) && 
+                ((player.x-2) < 79))
+		{
 		    (player.x)--;
 		    (player.x)--;
 		    mostraMapa(mapawin, 18, 81, &player);
 		}
 		break;
 	    case KEY_RIGHT:
-		if (mapa.map[player.y][player.x + 2] != 'X') {
+		if (!verificaColisao(mapa.map, player.y, player.x + 1) &&
+		((player.y) > 1)&& 
+                ((player.x+2) > 1) && 
+                ((player.y) < 16) && 
+                ((player.x+2) < 79))
+                {
 		    (player.x)++;
 		    (player.x)++;
 		    mostraMapa(mapawin, 18, 81, &player);
 		}
-		break;
-            break;
+		break;          
             case ' ':                          
                     // Se estiver no modo de comando, execute o comando
                     char *command = comandos(Commandwin);
