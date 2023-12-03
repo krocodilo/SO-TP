@@ -50,4 +50,11 @@ typedef struct {
     int minPlayers;
 } GameSettings;
 
+
+typedef struct {
+    char map[MAP_LINES][MAP_COLS + 1];
+} Mapa;
+
+
+
 #endif
