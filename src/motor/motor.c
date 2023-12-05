@@ -254,8 +254,9 @@ int main() {
     char adminCommand[50];
     while (1) {
 
-        printf("Insira um comando do administrador: ");
+        printf("\nInsira um comando do administrador: ");
         fgets(adminCommand, sizeof(adminCommand), stdin);
+        printf("\n");
         adminCommand[strcspn(adminCommand, "\n")] = '\0';  // Remova a nova linha
 
         // Processa o comando do administrador
