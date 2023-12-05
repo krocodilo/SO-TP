@@ -396,15 +396,11 @@ void jogadores(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
     
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,12,"Duraes");
+    mvwprintw(win, 1,12,"1");
     /*
     for (int i = 0; i < game->nPlayers; i++) {
         mvwprintw(*win, 1,1,"%s", game->players[i].name);
     }*/
-    wattroff(win,COLOR_PAIR(2));
-    
-    wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,12,"Duraes");
     wattroff(win,COLOR_PAIR(2));
     
     refresh();
@@ -686,6 +682,8 @@ int main(int argc, char *argv[]) {
     Game game;
     
     char playerName[MAX_NAME_LENGTH];
+
+    printf("\e[8;28;83t");
 
     initscr();
     noecho();
