@@ -5,22 +5,13 @@
 #include "../common/constants.h"
 
 typedef struct {
-    int x;
-    int y;
+    int x, y;
 } MobileBlock;
-    // TODO - precisamos de outra struct similar para as rochas, enquanto que esta é apenas para os bloqueios moveis
 
 
-
-
-
-
-
-
-
-
-
-
+typedef struct {
+    int x, y, durationSeconds;
+} Rock;
 
 
 typedef struct {
@@ -28,9 +19,10 @@ typedef struct {
     pid_t pid;
 } Bot;
 
+
 typedef struct {
     char username[MAX_PLAYER_NAME];
-    int fd_pipe;
+    int pipe_fd;
 } Player;
 
 

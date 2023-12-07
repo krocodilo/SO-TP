@@ -144,15 +144,6 @@ void testBot(Game *game) {
     }
 
 }
-/*
-void readMaps() {
-    adminMessageEnabled = 0;
-
-    mostra_mapa("labirinto.txt");
-
-    adminMessageEnabled = 1;
-
-}*/
 
 
 int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
@@ -216,6 +207,13 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
         printf("Comando do administrador inválido: %s\n", adminCommand);
     }
     return 0;
+}
+
+
+void* waitForClientsSignUp(void* arg){
+    Game* game = (Game*) arg;
+
+    // usar select? para esperar pelo pipe, com timeout
 }
 
 
