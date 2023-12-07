@@ -26,77 +26,14 @@ void listBots(Game *game);
 void destroy_win(WINDOW *local_win);
 
 
-typedef struct p Character, *pCharacter;
-
-struct p{
-    int x;
-    int y;
-    char symbol;
-};
-
-
-
-
-// Função para inicializar o personagem
-Character initCharacter(int x, int y, char symbol) {
-    Character character;
-    character.x = x;
-    character.y = y;
-    character.symbol = symbol;
-    return character;
-}
-
-
-// Função para desenhar o personagem na janela
-void drawCharacter(WINDOW *win, Character character) {
-    mvwprintw(win, character.y, character.x, "%c", character.symbol);
-    wrefresh(win);
-}
-
-// Função para limpar o rastro do personagem na janela
-void clearCharacter(WINDOW *win, Character character) {
-    mvwprintw(win, character.y, character.x, " ");
-    wrefresh(win);
-}
-
-// Função para mover o personagem na janela
-void moveCharacter(WINDOW *win, Character *character, int dx, int dy) {
-    //clearCharacter(win, *character);
-    //character->x += dx;
-    //character->y += dy;
-    //drawCharacter(win, *character);
-    
-    
-    
-    // Salva as coordenadas atuais antes de mover
-    int oldX = character->x;
-    int oldY = character->y;
-
-    // Calcula as novas coordenadas
-    int newX = oldX + dx;
-    int newY = oldY + dy;
-
-    // Verifica se as novas coordenadas estão dentro dos limites da janela/mapa
-    if (newX >= 0 && newX < 81 && newY >= 0 && newY < 18) {
-        // Limpa a posição anterior do personagem
-        mvwaddch(win, oldY, oldX, ' ');
-
-        // Atualiza as coordenadas do personagem
-        character->x = newX;
-        character->y = newY;
-
-        // Desenha o personagem na nova posição
-        mvwaddch(win, newY, newX, character->symbol);
-
-        // Atualiza a janela
-        wrefresh(win);
-    }
-}
 
 
 
 
 //Menu inicial
+
+///////////////////////////////////////////////////////////////////////////
+
 int showMenu(char **choices, int n_choices, int *highlight) {
     initscr();
     keypad(stdscr, TRUE);
@@ -110,12 +47,12 @@ int showMenu(char **choices, int n_choices, int *highlight) {
 
     start_color();
     init_pair(1, COLOR_WHITE, COLOR_BLACK);
-	
+
     WINDOW *menu_win = newwin(menu_height, menu_width, start_y, start_x);
     box(menu_win, 0, 0);
     wattron(menu_win,COLOR_PAIR(1));
     wrefresh(menu_win);
-    
+
     int c;
     int op = 0;
 
@@ -155,7 +92,7 @@ int showMenu(char **choices, int n_choices, int *highlight) {
                         ++(*highlight);
                     break;
                 case 10:  // Enter key
-                    op = 1;                 
+                    op = 1;
                     break;
                 default:
                     break;
@@ -170,7 +107,6 @@ int showMenu(char **choices, int n_choices, int *highlight) {
     keypad(stdscr, FALSE);
     return *highlight;
 }
-
 
 int runMenuLogic() {
     int op = 0;
@@ -188,10 +124,10 @@ int runMenuLogic() {
                 op = 1;
                 break;
             case 2:
-                // Opcoes 
+                // Opcoes
                 break;
             case 3:
-                // Sobre 
+                // Sobre
                 break;
             case 4:
                 // Sair
@@ -201,20 +137,79 @@ int runMenuLogic() {
     return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////
 
+void destroy_win(WINDOW *local_win){
 
+    wborder (local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 
-void destroy_win(WINDOW *local_win){	
-  
-      wborder (local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
-  
     wrefresh(local_win);
     delwin(local_win);
 }
 
-void lerMapa() {
+// Função para inicializar o personagem
+Character initCharacter(int x, int y, char symbol) {
+    Character character;
+    character.x = x;
+    character.y = y;
+    character.symbol = symbol;
+    return character;
+}
+
+
+// Função para desenhar o personagem na janela
+void drawCharacter(WINDOW *win, Character character) {
+    mvwprintw(win, character.y, character.x, "%c", character.symbol);
+    wrefresh(win);
+}
+
+// Função para limpar o rastro do personagem na janela
+void clearCharacter(WINDOW *win, Character character) {
+    mvwprintw(win, character.y, character.x, " ");
+    wrefresh(win);
+}
+
+// Função para mover o personagem na janela
+void moveCharacter(WINDOW *win, Character *character, int dx, int dy) {
+
+    // Salva as coordenadas atuais antes de mover
+    int oldX = character->x;
+    int oldY = character->y;
+
+    // Calcula as novas coordenadas
+    int newX = oldX + dx;
+    int newY = oldY + dy;
+
+    // Verifica se as novas coordenadas estão dentro dos limites da janela/mapa
+    if (newX >= 0 && newX < 81 && newY >= 0 && newY < 18) {
+        // Limpa a posição anterior do personagem
+        mvwaddch(win, oldY, oldX, ' ');
+
+        // Atualiza as coordenadas do personagem
+        character->x = newX;
+        character->y = newY;
+
+        // Desenha o personagem na nova posição
+        mvwaddch(win, newY, newX, character->symbol);
+
+        // Atualiza a janela
+        wrefresh(win);
+    }
+}
+
+void lerMapa(Game  *game) {
     char filepath[100];  // Ajuste o tamanho conforme necessário
-    snprintf(filepath, sizeof(filepath), "../src/jogoUI/%s", "labirinto.txt");
+
+    if (game->nivel == 1){
+        snprintf(filepath, sizeof(filepath), "../src/jogoUI/maps/%s", "labN1.txt");
+    }
+    if (game->nivel == 2){
+        snprintf(filepath, sizeof(filepath), "../src/jogoUI/maps/%s", "labN2.txt");
+    }
+    if (game->nivel == 3){
+        snprintf(filepath, sizeof(filepath), "../src/jogoUI/maps/%s", "labN3.txt");
+    }
+
 
     FILE *file = fopen(filepath, "r");
     if (file == NULL) {
@@ -283,7 +278,7 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
     wrefresh(mapawin);
 }
 
-void pedras(WINDOW *win, int height, int width) {
+void pedras(WINDOW *win, int height, int width,Game *game) {
     
 
     int yMax, xMax,a;
@@ -305,14 +300,14 @@ void pedras(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
     
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,9,"5");
+    mvwprintw(win, 1,9,"%d",game->nRocks);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
     wrefresh(win);
 }
 
-void bloqueios(WINDOW *win, int height, int width) {
+void bloqueios(WINDOW *win, int height, int width,Game *game) {
       
 
     int yMax, xMax,a;
@@ -334,19 +329,17 @@ void bloqueios(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
     
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,12,"3");
+    mvwprintw(win, 1,12,"%d",game->nBlocks);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
     wrefresh(win);
 }
 
-void nivel(WINDOW *win, int height, int width) {
-      
+void nivel(WINDOW *win, int height, int width,Game *game) {
 
     int yMax, xMax,xMin, yMin,a;
     getmaxyx(stdscr, yMax, xMax);
-    
 
     int startY = (18);
     int startX = (1);
@@ -373,7 +366,7 @@ void nivel(WINDOW *win, int height, int width) {
 }
 
 
-void jogadores(WINDOW *win, int height, int width) {
+void jogadores(WINDOW *win, int height, int width,Game *game) {
      
 
     int yMax, xMax,a;
@@ -396,11 +389,9 @@ void jogadores(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
     
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,12,"1");
-    /*
     for (int i = 0; i < game->nPlayers; i++) {
-        mvwprintw(*win, 1,1,"%s", game->players[i].name);
-    }*/
+        mvwprintw(win, 1,12,"%s", game->players[i].username);
+    }
     wattroff(win,COLOR_PAIR(2));
     
     refresh();
@@ -408,7 +399,7 @@ void jogadores(WINDOW *win, int height, int width) {
 }
 
 
-void executeCommand(char *command,WINDOW *win, int height, int width) {
+void executeCommand(char *command,WINDOW *win, int height, int width,Game *game) {
     
     echo();
     
@@ -494,8 +485,6 @@ void comandos2(WINDOW * comandwin){
 }
 
 
-
-
 /*int validatePlayerName(Player activePlayers[], int numActivePlayers, char *name) {
 
    for (int i = 0; i < numActivePlayers; ++i) {
@@ -519,7 +508,7 @@ WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
         for (int i = 0; i < game->nPlayers; i++) {
             printf("- %s\n", game->players[i].name);
         }*/
-        executeCommand(command,centeredWin, 0, 0);
+        executeCommand(command,centeredWin, 0, 0, game);
     }else
 
     if (strncmp(command, "msg", 3) == 0) {
@@ -538,16 +527,33 @@ WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
             } else {
                 mvprintw(12, 0, "Erro: Utilizador %s não encontrado.", targetName);
             }*/
-            executeCommand(cmdCopy,centeredWin, 0, 0);
+            executeCommand(cmdCopy,centeredWin, 0, 0,game);
         }
         else
         {
-            executeCommand("msg <nome_utilizador> <mensagem>",centeredWin, 0, 0);
+            executeCommand("msg <nome_utilizador> <mensagem>",centeredWin, 0, 0, game);
         }
 
 
     }
-
+    //codes
+    ////////////////////////////////////////////////
+    else
+    if (strcmp(command, "n1") == 0) {
+        game->nivel=1;
+        lerMapa(game);
+    }
+    else
+    if (strcmp(command, "n2") == 0) {
+        game->nivel=2;
+        lerMapa(game);
+    }
+    else
+    if (strcmp(command, "n3") == 0) {
+        game->nivel=3;
+        lerMapa(game);
+    }
+    ////////////////////////////////////////////////////77
     else
     if (strcmp(command, "exit") == 0) {
         // TODO: avisar motor e sair ordeiramente
@@ -558,7 +564,7 @@ WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
 
     else
     {
-        executeCommand("Comando invalido!",centeredWin, 0, 0);
+        executeCommand("Comando invalido!",centeredWin, 0, 0, game);
     }
     
     return 0;
@@ -591,14 +597,14 @@ void controloTeclas(Game *game) {
     WINDOW * notificationwin;
     
     Character player = initCharacter(3, 2, 'P'); 
-    lerMapa();
+    lerMapa(game);
     
     mostraMapa(mapawin, 18, 81, &player);
-    nivel(nivelwin, 0, 0);
-    jogadores(jogadoreswin, 0, 0);
-    bloqueios(bloqueioswin, 0, 0);
-    pedras(pedraswin, 0, 0);
-    executeCommand(" ",notificationwin, 0, 0);
+    nivel(nivelwin, 0, 0,game);
+    jogadores(jogadoreswin, 0, 0, game);
+    bloqueios(bloqueioswin, 0, 0,game);
+    pedras(pedraswin, 0, 0,game);
+    executeCommand(" ",notificationwin, 0, 0,game);
     
 
     comandos2(Commandwin);  
@@ -680,8 +686,9 @@ int main(int argc, char *argv[]) {
     char *command;
 
     Game game;
-    
-    char playerName[MAX_NAME_LENGTH];
+    game.nivel=1;
+    game.nBlocks=0;
+    game.nRocks=0;
 
     printf("\e[8;28;83t");
 
@@ -694,11 +701,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    strncpy(playerName, argv[1], MAX_NAME_LENGTH - 1);
-    playerName[MAX_NAME_LENGTH - 1] = '\0';
+    strncpy(game.players[0].username, argv[1], MAX_PLAYER_NAME - 1);
+    game.players[0].username[MAX_PLAYER_NAME - 1] = '\0';
 
-    //mvprintw(5, 0, "Jogador %s criado!", playerName);
-    
+
+    game.nPlayers++;
+
     
     runMenuLogic();
     	

@@ -32,6 +32,9 @@ typedef struct {
     int nPlayers;
     int nBots;
     int pipegen_fd; // file descriptor for general pipe
+    int nivel;
+    int nBlocks;
+    int nRocks;
 } Game;
 
 
@@ -47,6 +50,10 @@ typedef struct {
     char map[MAP_LINES][MAP_COLS + 1];
 } Mapa;
 
-
+typedef struct{
+    int x;
+    int y;
+    char symbol;
+}Character;
 
 #endif
