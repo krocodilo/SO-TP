@@ -201,13 +201,13 @@ void lerMapa(Game  *game) {
     char filepath[100];  // Ajuste o tamanho conforme necessário
 
     if (game->nivel == 1){
-        snprintf(filepath, sizeof(filepath), "../src/jogoUI/maps/%s", "labN1.txt");
+        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN1.txt");
     }
     if (game->nivel == 2){
-        snprintf(filepath, sizeof(filepath), "../src/jogoUI/maps/%s", "labN2.txt");
+        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN2.txt");
     }
     if (game->nivel == 3){
-        snprintf(filepath, sizeof(filepath), "../src/jogoUI/maps/%s", "labN3.txt");
+        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN3.txt");
     }
 
 
