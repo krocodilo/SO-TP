@@ -1,6 +1,8 @@
 #ifndef SO_TP_CONSTANTS_H
 #define SO_TP_CONSTANTS_H
 
+
+
 // Game Limits constants
 #define MAX_PLAYERS     5
 #define MAX_BOTS        10
@@ -8,9 +10,11 @@
 #define MAX_LEVELS      3
 #define MAX_BLOQ_MOVEIS 5   // maximo bloqueios moveis
 
+
 // Map size
 #define MAP_LINES   16
 #define MAP_COLS    40
+
 
 // Environment Variables
 #define ENV_SIGNUP_WINDOW_DURATION_SECONDS  "INSCRICAO"
@@ -24,8 +28,6 @@
 #define MAX_BOT_NAME 30
 
 #define GENERAL_PIPE "/tmp/TP_SO_2023_24_GENERAL_PIPE"
-
-
 
 
 

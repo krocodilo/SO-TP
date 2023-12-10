@@ -32,7 +32,7 @@ typedef struct {
     int nPlayers;
     int nBots;
     int pipegen_fd; // file descriptor for general pipe
-    int CurrentLevel;
+    int currentLevel;
     int nBlocks;
     int nRocks;
 } Game;
