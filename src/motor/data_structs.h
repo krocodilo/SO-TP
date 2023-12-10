@@ -47,7 +47,7 @@ typedef struct {
 
 
 typedef struct {
-    char map[MAP_LINES][MAP_COLS + 1];
+    char cmap[MAP_LINES][MAP_COLS + 1];
 } Map;
 
 typedef struct{

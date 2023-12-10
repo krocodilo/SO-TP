@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include "../motor/data_structs.h"
 
-#define MAX_NAME_LENGTH 50
+
 #define MAX_COMMAND_LENGTH 50
 #define MAX_ACTIVE_PLAYERS 5
 #define SPACING_FACTOR 2
@@ -16,7 +16,7 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 3
 
-Mapa mapa;
+Map map;
 
 int showMenu(char **choices, int n_choices, int *highlight);
 int runMenuLogic();
@@ -24,10 +24,6 @@ WINDOW* processCommand(Game *game, char *command,WINDOW *centeredWin) ;
 //int validatePlayerName(Player activePlayers[], int numActivePlayers, char *name);
 void listBots(Game *game);
 void destroy_win(WINDOW *local_win);
-
-
-
-
 
 
 //Menu inicial
@@ -200,17 +196,16 @@ void moveCharacter(WINDOW *win, Character *character, int dx, int dy) {
 void lerMapa(Game  *game) {
     char filepath[100];  // Ajuste o tamanho conforme necessário
 
-    if (game->nivel == 1){
+    if (game->currentLevel== 1){
         snprintf(filepath, sizeof(filepath), "./maps/%s", "labN1.txt");
+        //snprintf(filepath, sizeof(filepath), "../src/jogoUI/%s", "labirinto.txt");
     }
-    if (game->nivel == 2){
+    if (game->currentLevel == 2){
         snprintf(filepath, sizeof(filepath), "./maps/%s", "labN2.txt");
     }
-    if (game->nivel == 3){
+    if (game->currentLevel == 3){
         snprintf(filepath, sizeof(filepath), "./maps/%s", "labN3.txt");
     }
-
-
     FILE *file = fopen(filepath, "r");
     if (file == NULL) {
         perror("Erro ao abrir o arquivo de mapa");
@@ -218,65 +213,61 @@ void lerMapa(Game  *game) {
     }
 
     int i = 0;
-    while (i < MAP_LINES && fgets(mapa.map[i], sizeof(mapa.map[i]), file) != NULL) {
-        // Remove a nova linha do final de cada linha lida
-        mapa.map[i][strcspn(mapa.map[i], "\n")] = '\0';
 
-        // Ignora linhas em branco
-        if (mapa.map[i][0] != '\0') {
-            i++;
+
+    while (i < MAP_LINES && fgets(map.cmap[i], sizeof(map.cmap[i]), file) != NULL) {
+        // Remover explicitamente a nova linha do final de cada linha lida
+        size_t length = strlen(map.cmap[i]);
+        if (length > 0 && map.cmap[i][length - 1] == '\n') {
+            map.cmap[i][length - 1] = '\0';
         }
+        i++;
     }
-
     fclose(file);
 }
-
 void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
     echo();
-
     int yMax, xMax,a;
     getmaxyx(stdscr, yMax, xMax);
-
     int startY = (0);
     int startX = (1);
     int limiteX = width;
     int limiteY = height;
-
     mapawin = newwin(limiteY, limiteX, startY, startX);
     box(mapawin,0,0);
-
     start_color();
-    
+
     init_color(COLOR_CYAN,0-999,0-999,0-999);
-   
+
     wattron(mapawin,COLOR_PAIR(1));
-    
+
     //mvwprintw(*win, 1,1,"MAPA");
-    
+
     ///////////////////////////////////////
-    
-    
+
+
     for (int i = 0; i < MAP_LINES; i++) {
-        if (mapa.map[i][0] != '\0') {
+        if (map.cmap[i][0] != '\0') {
             // Mostra a linha com espaçamento duplo na largura
-            for (int j = 0; j < strlen(mapa.map[i]); j++) {
-                mvwprintw(mapawin, i + 1, j * SPACING_FACTOR + 1, "%c", mapa.map[i][j]);
+            for (int j = 0; j < strlen(map.cmap[i]); j++) {
+                mvwprintw(mapawin, i + 1, j * SPACING_FACTOR + 1, "%c", map.cmap[i][j]);
             }
         }
     }
-    
+
     ////////////////////////////////////////
     wattroff(mapawin,COLOR_PAIR(1));
-    
-    
+
+
     wattron(mapawin,COLOR_WHITE);
     drawCharacter(mapawin,*player);
     wattroff(mapawin,COLOR_WHITE);
-    
+
     noecho();
     refresh();
     wrefresh(mapawin);
 }
+
 
 void pedras(WINDOW *win, int height, int width,Game *game) {
     
@@ -540,17 +531,17 @@ WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
     ////////////////////////////////////////////////
     else
     if (strcmp(command, "n1") == 0) {
-        game->nivel=1;
+        game->currentLevel=1;
         lerMapa(game);
     }
     else
     if (strcmp(command, "n2") == 0) {
-        game->nivel=2;
+        game->currentLevel=2;
         lerMapa(game);
     }
     else
     if (strcmp(command, "n3") == 0) {
-        game->nivel=3;
+        game->currentLevel=3;
         lerMapa(game);
     }
     ////////////////////////////////////////////////////77
@@ -618,7 +609,7 @@ void controloTeclas(Game *game) {
         switch (ch) {
             case KEY_UP:
                 
-                if (!verificaColisao(mapa.map, player.y - 1, player.x) &&
+                if (!verificaColisao(map.cmap, player.y - 1, player.x) &&
                 ((player.y-1) > 1) && 
                 ((player.x) > 1) && 
                 ((player.y-1) < 16) && 
@@ -629,7 +620,7 @@ void controloTeclas(Game *game) {
                 }
                 break;
 	    case KEY_DOWN:
-		if (!verificaColisao(mapa.map, player.y + 1, player.x) &&
+		if (!verificaColisao(map.cmap, player.y + 1, player.x) &&
 		((player.y+1) > 1) && 
                 ((player.x) > 1) && 
                 ((player.y+1) < 16) && 
@@ -640,7 +631,7 @@ void controloTeclas(Game *game) {
 		}
 		break;
 	    case KEY_LEFT:
-		if (!verificaColisao(mapa.map, player.y, player.x - 2) &&
+		if (!verificaColisao(map.cmap, player.y, player.x - 2) &&
 		((player.y) > 1)&& 
                 ((player.x-2) > 1) && 
                 ((player.y) < 16) && 
@@ -652,7 +643,7 @@ void controloTeclas(Game *game) {
 		}
 		break;
 	    case KEY_RIGHT:
-		if (!verificaColisao(mapa.map, player.y, player.x + 1) &&
+		if (!verificaColisao(map.cmap, player.y, player.x + 1) &&
 		((player.y) > 1)&& 
                 ((player.x+2) > 1) && 
                 ((player.y) < 16) && 
@@ -667,7 +658,7 @@ void controloTeclas(Game *game) {
                     // Se estiver no modo de comando, execute o comando
                     char *command = comandos(Commandwin);
                     processCommand(game, command, Commandwin);
-                    free(command);
+                    free( command);
                     comandos2(Commandwin);  
                                                                      
                  
@@ -686,7 +677,7 @@ int main(int argc, char *argv[]) {
     char *command;
 
     Game game;
-    game.nivel=1;
+    game.currentLevel=1;
     game.nBlocks=0;
     game.nRocks=0;
 
