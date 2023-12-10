@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <ctype.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -193,6 +194,16 @@ void moveCharacter(WINDOW *win, Character *character, int dx, int dy) {
     }
 }
 
+int isLinhaEmBranco(const char *linha) {
+    while (*linha) {
+        if (!isspace(*linha)) {
+            return 0;  // A linha não está em branco
+        }
+        linha++;
+    }
+    return 1;  // A linha está em branco
+}
+
 void lerMapa(Game  *game) {
     char filepath[100];  // Ajuste o tamanho conforme necessário
 
@@ -206,25 +217,39 @@ void lerMapa(Game  *game) {
     if (game->currentLevel == 3){
         snprintf(filepath, sizeof(filepath), "./maps/%s", "labN3.txt");
     }
-    FILE *file = fopen(filepath, "r");
-    if (file == NULL) {
-        perror("Erro ao abrir o arquivo de mapa");
+
+    FILE *filePointer;
+    filePointer = fopen(filepath, "r");
+
+    if (filePointer == NULL) {
+        perror("Erro ao abrir o arquivo");
         return;
     }
 
-    int i = 0;
+    int linhaAtual = 0;
+    char buffer[MAP_COLS + 2];  // +2 para incluir espaço para '\n' e '\0'
 
+    while (linhaAtual < MAP_LINES && fgets(buffer, sizeof(buffer), filePointer) != NULL) {
+        size_t comprimento = strlen(buffer);
 
-    while (i < MAP_LINES && fgets(map.cmap[i], sizeof(map.cmap[i]), file) != NULL) {
-        // Remover explicitamente a nova linha do final de cada linha lida
-        size_t length = strlen(map.cmap[i]);
-        if (length > 0 && map.cmap[i][length - 1] == '\n') {
-            map.cmap[i][length - 1] = '\0';
+        // Remover o caractere de nova linha, se existir
+        if (comprimento > 0 && buffer[comprimento - 1] == '\n') {
+            buffer[comprimento - 1] = '\0';
         }
-        i++;
+
+        // Verificar se a linha não está em branco
+        if (!isLinhaEmBranco(buffer)) {
+            strcpy(map.cmap[linhaAtual], buffer);
+            linhaAtual++;
+        }
     }
-    fclose(file);
+
+    fclose(filePointer);
 }
+
+
+
+
 void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
     echo();
     int yMax, xMax,a;
@@ -596,7 +621,7 @@ void controloTeclas(Game *game) {
     bloqueios(bloqueioswin, 0, 0,game);
     pedras(pedraswin, 0, 0,game);
     executeCommand(" ",notificationwin, 0, 0,game);
-    
+    char *command;
 
     comandos2(Commandwin);  
    
@@ -656,7 +681,7 @@ void controloTeclas(Game *game) {
 		break;          
             case ' ':                          
                     // Se estiver no modo de comando, execute o comando
-                    char *command = comandos(Commandwin);
+                    command = comandos(Commandwin);
                     processCommand(game, command, Commandwin);
                     free( command);
                     comandos2(Commandwin);  
@@ -674,7 +699,6 @@ void controloTeclas(Game *game) {
 
 int main(int argc, char *argv[]) {
     Player activePlayers[MAX_ACTIVE_PLAYERS];
-    char *command;
 
     Game game;
     game.currentLevel=1;
