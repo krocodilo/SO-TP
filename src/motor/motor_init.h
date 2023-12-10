@@ -12,7 +12,6 @@
 
 #include "data_structs.h"
 
-int create_and_open(char* pipename, int flags);
 void resetGame(Game* game);
 int readEnvironmentVariables(GameSettings* gs);
 
