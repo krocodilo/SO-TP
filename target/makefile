@@ -3,17 +3,17 @@ bot_dir = ../src/bot
 jogoUI_dir = ../src/jogoUI
 
 
-motor: bot
+motor: bot $(motor_dir)/*
 	gcc -c $(motor_dir)/motor_init.c -o motor_init.o
 	#gcc -c $(motor_dir)/motor_signup.c -o motor_signup.o
 	gcc -o motor $(motor_dir)/motor.c motor_init.o #motor_signup.o
 	chmod +x motor
 
-bot:
+bot: $(bot_dir)/*
 	gcc $(bot_dir)/bot.c -o bot
 	chmod +x bot
 
-jogoUI:
+jogoUI: $(jogoUI_dir)/*
 	gcc $(jogoUI_dir)/jogoUI.c -o jogoUI -lncurses
 	chmod +x jogoUI
 
