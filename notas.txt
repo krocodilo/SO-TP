@@ -1,0 +1,2 @@
+
+- a consola do administrador apenas aparece após o jogo começar. Durante o periodo de inscrições, a unica interação com o administrador é caso ocorra time out do periodo de inscrições, em que o motor pergunta ao admin se quer esperar pelo minimo de users
