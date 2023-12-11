@@ -14,10 +14,12 @@ void terminate(int signum){
 //        wait(???); // esperar que os bots terminem
     }
 
-    // Close all named pipes
+    // Close general pipe
     if(game->pipegen_fd > 0)
         close(game->pipegen_fd);
     unlink(GENERAL_PIPE);
+
+    // Close client pipes
 
     exit(exitcode);
 }
@@ -210,24 +212,26 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
 }
 
 
-void* waitForClientsSignUp(void* arg){
-    Game* game = (Game*) arg;
-
-    // usar select? para esperar pelo pipe, com timeout
-}
 
 
-int main() {
+
+
+int main(int argc, char *argv[]) {
     GameSettings gameSettings;
-    Game newGame;
-    game = &newGame;    // save current game to global game variable
+
+
+    game = malloc(sizeof(Game));
+    if (game == NULL){
+        perror("\nERRO: ao alocar memoria para o jogo.\n");
+        return EXIT_FAILURE;
+    }
     resetGame(game);
 
     // Read Environment Variables
-//    if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE ){
-//        exitcode = EXIT_FAILURE;
-//        terminate(0);
-//    }
+    if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE ){
+        exitcode = EXIT_FAILURE;
+        terminate(0);
+    }
 
     // Register signal handler
     signal(SIGINT, terminate);
@@ -247,8 +251,13 @@ int main() {
         exitcode = EXIT_FAILURE; terminate(0);
     }
 
+    while(true){
+        printf("\n\nStarting a new game!\n");
 
-    // Commands
+        waitForClientsSignUp(gameSettings);
+    }
+
+
     char adminCommand[50];
     while (1) {
 

@@ -35,7 +35,7 @@ void waitForClientsSignUp(GameSettings gameSettings){
                     break;
                 }
                 // else:
-                printf("\nO periodo de inscricoes terminou, sem o minimo de jogadores. Pretende"
+                printf("\nO periodo de inscricoes terminou, sem o minimo de jogadores. Pretende "
                        "esperar pelo minimo numero de jogadores? \n(yes/no, DEFAULT: yes) _>  ");
 
                 char resp[5];
@@ -44,6 +44,8 @@ void waitForClientsSignUp(GameSettings gameSettings){
 
                 if (strcmp(resp, "no") == 0)
                     break;
+                else
+                    printf("Continuando a espera...");
                 hasTimedOut = 1;
             }
             else if(sval == -1)
@@ -73,13 +75,22 @@ bool receiveNewPlayer(Player* newPlayer){
 
     strcpy(newPlayer->username, username);
 
-    newPlayer->pipe_fd = open(newPlayer->username, O_RDWR);
+    // Concatenate directory and filename
+    char clientPipeName[MAX_PLAYER_NAME + strlen(PIPE_DIRECTORY)];
+    strcpy(clientPipeName, PIPE_DIRECTORY);
+    strcat(clientPipeName, newPlayer->username);
+
+    newPlayer->pipe_fd = open(clientPipeName, O_RDWR);
 
     if (newPlayer->pipe_fd == -1){ //se o pipe do cliente der erro a abrir!
         fprintf(stderr, "\nERRO ao abrir o pipe com o cliente %s\n", newPlayer->username);
         return false;
         // opcionalmente, enviar um sinal ao cliente para informar da impossibilidade
     }
+
+
+    //delete
+    close(newPlayer->pipe_fd);
 
     // Informar o cliente do sucesso
 //    sm.wait = 1;
@@ -96,5 +107,7 @@ bool receiveNewPlayer(Player* newPlayer){
 //    p->continuaPlayer = 1
 //    p->isOut = 0; //0 -> esta dentro do campeonato
 
+
+    printf("\nO utilizador '%s' inscreveu-se no jogo.\n", newPlayer->username);
     return true;
 }

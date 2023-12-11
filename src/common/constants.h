@@ -27,6 +27,9 @@
 #define MAX_PLAYER_NAME 30
 #define MAX_BOT_NAME 30
 
+
+// Pipes
+#define PIPE_DIRECTORY "/tmp/"
 #define GENERAL_PIPE "/tmp/TP_SO_2023_24_GENERAL_PIPE"
 
 
