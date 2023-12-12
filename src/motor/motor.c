@@ -24,39 +24,67 @@ void terminate(int signum){
     exit(exitcode);
 }
 
+//Função para verificar se há colisão na próxima posição
+bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
+    // Ajusta as coordenadas do jogador para corresponder ao mapeamento no mapa
+    int playerMapY = nextY - 1;
+    int playerMapX = nextX / 2;
 
-void mostra_mapa(const char *filename) {
+    // Verifica se a próxima posição contém 'X' (obstáculo)
+    return mapa[playerMapY][playerMapX] == 'X';
+}
 
+int isLinhaEmBranco(const char *linha) {
+    while (*linha) {
+        if (!isspace(*linha)) {
+            return 0;  // A linha não está em branco
+        }
+        linha++;
+    }
+    return 1;  // A linha está em branco
+}
 
-    // TODO: Tentar ler apenas o ficheiro sem verificações, para resolver o problema que le apenas metade
-
-
-
+void lerMapa(Game  *game) {
     char filepath[100];  // Ajuste o tamanho conforme necessário
-    snprintf(filepath, sizeof(filepath), "../src/jogoUI/%s", filename);
 
-    FILE *file = fopen(filepath, "r");
-    if (file == NULL) {
-        perror("Erro ao abrir o arquivo de mapa");
+    if (game->currentLevel== 1){
+        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN1.txt");
+        //snprintf(filepath, sizeof(filepath), "../src/jogoUI/%s", "labirinto.txt");
+    }
+    if (game->currentLevel == 2){
+        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN2.txt");
+    }
+    if (game->currentLevel == 3){
+        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN3.txt");
+    }
+
+    FILE *filePointer;
+    filePointer = fopen(filepath, "r");
+
+    if (filePointer == NULL) {
+        perror("Erro ao abrir o arquivo");
         return;
     }
 
-    char map[MAP_LINES][MAP_COLS + 1];  // +1 para o caractere nulo no final de cada linha
+    int linhaAtual = 0;
+    char buffer[MAP_COLS + 2];  // +2 para incluir espaço para '\n' e '\0'
 
-    // Lê o arquivo e armazena o mapa em uma matriz
-    int i = 0;
-    while (i < MAP_LINES && fgets(map[i], sizeof(map[i]), file) != NULL) {
-        // Remove a nova linha do final de cada linha lida
-        map[i][strcspn(map[i], "\n")] = '\0';
+    while (linhaAtual < MAP_LINES && fgets(buffer, sizeof(buffer), filePointer) != NULL) {
+        size_t comprimento = strlen(buffer);
 
-        // Ignora linhas em branco
-        if (map[i][0] != '\0') {
-            printf("%s\n", map[i]);
-            i++;
+        // Remover o caractere de nova linha, se existir
+        if (comprimento > 0 && buffer[comprimento - 1] == '\n') {
+            buffer[comprimento - 1] = '\0';
+        }
+
+        // Verificar se a linha não está em branco
+        if (!isLinhaEmBranco(buffer)) {
+            strcpy(map.cmap[linhaAtual], buffer);
+            linhaAtual++;
         }
     }
 
-    fclose(file);
+    fclose(filePointer);
 }
 
 

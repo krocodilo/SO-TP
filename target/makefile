@@ -13,7 +13,8 @@ bot: $(bot_dir)/*
 	gcc $(bot_dir)/bot.c -o bot
 
 jogoUI: $(jogoUI_dir)/* $(common_dir)/*
-	gcc $(jogoUI_dir)/jogoUI.c -o jogoUI -lncurses
+	gcc -c $(jogoUI_dir)/windows_ncurses.c -o windows_ncurses.o -lncurses
+	gcc -o jogoUI -lncurses $(jogoUI_dir)/jogoUI.c windows_ncurses.o 
 
 utils.o: $(common_dir)/utils.c $(common_dir)/utils.h
 	gcc -c $(common_dir)/utils.c -o utils.o
