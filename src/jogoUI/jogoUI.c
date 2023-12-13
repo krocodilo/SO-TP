@@ -21,7 +21,7 @@ void controloTeclas(Game *game) {
     WINDOW * notificationwin;
     
     Character player = initCharacter(3, 2, 'P'); 
-    lerMapa(game);
+    //lerMapa(game);
     
     mostraMapa(mapawin, 18, 81, &player);
     nivel(nivelwin, 0, 0,game);
