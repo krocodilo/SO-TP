@@ -108,10 +108,10 @@ void controloTeclas() {
 int main(int argc, char *argv[]) {
     Player activePlayers[MAX_ACTIVE_PLAYERS];
 
-    Game game;
-    game.currentLevel=1;
-    game.nBlocks=0;
-    game.nRocks=0;
+    //Game game;
+    //game.currentLevel=1;
+    //game.nBlocks=0;
+    //game.nRocks=0;
 
     printf("\e[8;28;83t");
 
@@ -124,11 +124,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    strncpy(game.players[0].username, argv[1], MAX_PLAYER_NAME - 1);
-    game.players[0].username[MAX_PLAYER_NAME - 1] = '\0';
+    //strncpy(game.players[0].username, argv[1], MAX_PLAYER_NAME - 1);
+    //game.players[0].username[MAX_PLAYER_NAME - 1] = '\0';
 
 
-    game.nPlayers++;
+    //game.nPlayers++;
 
     
     runMenuLogic();

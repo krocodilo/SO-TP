@@ -187,7 +187,7 @@ void pedras(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,9,"");
+    mvwprintw(win, 1,9," ");
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -217,7 +217,7 @@ void bloqueios(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,12,"");
+    mvwprintw(win, 1,12," ");
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
