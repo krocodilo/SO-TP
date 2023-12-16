@@ -3,7 +3,7 @@
 
 
 
-void waitForClientsSignUp(GameSettings gameSettings){
+void waitForClientsSignUp(GameSettings gameSettings, Game* game){
     /*
      * Wait for enough players to sign up
      */
@@ -54,20 +54,20 @@ void waitForClientsSignUp(GameSettings gameSettings){
 
 
         // read pipe
-        if( receiveNewPlayer( &game->players[game->nPlayers] ) )
+        if( receiveNewPlayer( &game->players[game->nPlayers], game->generalPipe) )
             game->nPlayers++;
     }
 }
 
 
-bool receiveNewPlayer(Player* newPlayer){
+bool receiveNewPlayer(Player* newPlayer, int generalPipe){
     /*
      * read a new player from the general pipe
      */
 
     SignUpMessage msg;
 
-    if (read(game->generalPipe, &msg, sizeof(msg)) != sizeof(msg) ){
+    if (read(generalPipe, &msg, sizeof(msg)) != sizeof(msg) ){
         perror("\nERRO: foi recebida uma mensagem incompleta aquando tentativa de inscricao.\n");
         return false;
     }

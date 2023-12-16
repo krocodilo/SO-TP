@@ -13,12 +13,9 @@
 #include "../common/constants.h"
 #include "../common/messages.h"
 
-#include "global_variables.h"
-Game* game;     // External global variable, declared in global_variables.h
 
-
-void waitForClientsSignUp(GameSettings gameSettings);
-bool receiveNewPlayer(Player* newPlayer);
+void waitForClientsSignUp(GameSettings gameSettings, Game* game);
+bool receiveNewPlayer(Player* newPlayer, int generalPipe);
 
 
 

@@ -124,7 +124,7 @@ void testBot(Game *game) {
 
 
 //    runBots(game);
-    
+
     if (game->nBots == 0) {
         // Seleciona o primeiro bot para teste (índice 0)
 //        Bot *bot = &game->bots[0];
@@ -269,7 +269,7 @@ int main(int argc, char *argv[]) {
     while(true){
         printf("\n\nStarting a new game!\n");
 
-        waitForClientsSignUp(gameSettings);
+        waitForClientsSignUp(gameSettings, game);
     }
 
 

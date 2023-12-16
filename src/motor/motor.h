@@ -14,7 +14,6 @@
 #include <sys/wait.h>
 #include <pthread.h>
 
-#include "global_variables.h"
 #include "data_structs.h"
 #include "../common/constants.h"
 #include "../common/utils.h"
@@ -27,7 +26,9 @@
 int exitcode = EXIT_SUCCESS;
 
 
-Game* game;     // External global variable, declared in global_variables.h
+Game* game;
+
+Map map;
 
 
 #endif
