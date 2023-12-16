@@ -31,6 +31,7 @@
 // Pipes
 #define PIPE_DIRECTORY "/tmp/"
 #define GENERAL_PIPE "/tmp/TP_SO_2023_24_GENERAL_PIPE"
+#define PIPE_PATH_MAX_SIZE (MAX_PLAYER_NAME + sizeof(PIPE_DIRECTORY))
 
 
 

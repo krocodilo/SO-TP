@@ -13,7 +13,7 @@ void waitForClientsSignUp(GameSettings gameSettings){
     fd_set read_fds;
     int sval, hasTimedOut = 0;
 
-    printf("\n\nA espera de jogadores...\n\n");
+    printf("\n\nEsta aberta a inscricao de jogadores...\n\n");
 
     while(game->nPlayers < MAX_PLAYERS &&
           !(hasTimedOut && game->nPlayers >= gameSettings.minPlayers)
@@ -22,10 +22,10 @@ void waitForClientsSignUp(GameSettings gameSettings){
 
         if(!hasTimedOut){
             FD_ZERO(&read_fds);            //inicializa a watchlist
-            FD_SET(game->pipegen_fd, &read_fds); // add pipegen_fd ao conjunto watchlist
+            FD_SET(game->generalPipe, &read_fds); // add generalPipe ao conjunto watchlist
 
             sval = select(
-                    game->pipegen_fd +1,
+                    game->generalPipe + 1,
                     &read_fds, NULL, NULL,
                     &waitTime               // cada uso do select decrementa o waitTime
             );
@@ -60,53 +60,34 @@ void waitForClientsSignUp(GameSettings gameSettings){
 }
 
 
-
 bool receiveNewPlayer(Player* newPlayer){
     /*
      * read a new player from the general pipe
      */
 
-    char username[MAX_PLAYER_NAME];
+    SignUpMessage msg;
 
-    if ( read(game->pipegen_fd, &username, sizeof(username)) != sizeof(username) ){
+    if (read(game->generalPipe, &msg, sizeof(msg)) != sizeof(msg) ){
         perror("\nERRO: foi recebida uma mensagem incompleta aquando tentativa de inscricao.\n");
         return false;
     }
 
-    strcpy(newPlayer->username, username);
+    strcpy(newPlayer->username, msg.username);
 
     // Concatenate directory and filename
-    char clientPipeName[MAX_PLAYER_NAME + strlen(PIPE_DIRECTORY)];
-    strcpy(clientPipeName, PIPE_DIRECTORY);
-    strcat(clientPipeName, newPlayer->username);
+//    char clientPipeName[PIPE_PATH_MAX_SIZE];
+//    strcpy(clientPipeName, PIPE_DIRECTORY);
+//    strcat(clientPipeName, newPlayer->username);
 
-    newPlayer->pipe_fd = open(clientPipeName, O_RDWR);
+    newPlayer->pipe = open(msg.pipePath, O_RDONLY);
 
-    if (newPlayer->pipe_fd == -1){ //se o pipe do cliente der erro a abrir!
+    if (newPlayer->pipe == -1){ //se o pipe do cliente der erro a abrir!
         fprintf(stderr, "\nERRO ao abrir o pipe com o cliente %s\n", newPlayer->username);
         return false;
         // opcionalmente, enviar um sinal ao cliente para informar da impossibilidade
     }
 
-
-    //delete
-    close(newPlayer->pipe_fd);
-
-    // Informar o cliente do sucesso
-//    sm.wait = 1;
-//    strcpy(sm.message, "\nA espera de mais jogadores...\n");
-//    write(p->pipe_fd, &sm, sizeof(sm));  //envia para os jogadores
-//
-//
-//    printf("Foi adicionado o jogador: %s\n", msg.message);
-//
-//    close(p->pipe_fd);
-//    p->pipe_fd = -1;    //-1 para indicar a funcao terminate que o pipe nao esta aberto
-//    p->next = NULL;
-//
-//    p->continuaPlayer = 1
-//    p->isOut = 0; //0 -> esta dentro do campeonato
-
+    // TODO send confirmation message to player
 
     printf("\nO utilizador '%s' inscreveu-se no jogo.\n", newPlayer->username);
     return true;

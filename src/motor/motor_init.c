@@ -7,7 +7,7 @@
 void resetGame(Game* game) {
     game->nPlayers = 0;
     game->nBots = 0;
-    game->pipegen_fd = 0;
+    game->generalPipe = 0;
 }
 
 

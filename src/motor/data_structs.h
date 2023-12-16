@@ -19,19 +19,18 @@ typedef struct {
     pid_t pid;
 } Bot;
 
-
 typedef struct {
     char username[MAX_PLAYER_NAME];
-    int pipe_fd;
+    int pipe;
 } Player;
 
 
 typedef struct {
     Player players[MAX_PLAYERS];
     Bot bots[MAX_BOTS];
+    int generalPipe; // file descriptor for general pipe
     int nPlayers;
     int nBots;
-    int pipegen_fd; // file descriptor for general pipe
     int currentLevel;
     int nBlocks;
     int nRocks;

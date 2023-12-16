@@ -3,9 +3,6 @@
 
 
 void terminate(int signum){
-//    if (signum == SIGINT){
-//        printf("\nReceived SIGINT.");
-//    }
     printf("\nTerminating...\n");
 
     // Terminate all bots
@@ -15,8 +12,8 @@ void terminate(int signum){
     }
 
     // Close general pipe
-    if(game->pipegen_fd > 0)
-        close(game->pipegen_fd);
+    if(game->generalPipe > 0)
+        close(game->generalPipe);
     unlink(GENERAL_PIPE);
 
     // Close client pipes
@@ -178,17 +175,7 @@ void testBot(Game *game) {
 
 int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
 
-    if (strcmp(adminCommand, "run_bots") == 0) {
-        runBots(game);
-    } else if (strcmp(adminCommand, "read_map") == 0) {
-        mostra_mapa("labirinto.txt");
-    } else if (strcmp(adminCommand, "test_bot") == 0) {
-        testBot(game);
-
-    }
-
-
-    else if (strcmp(adminCommand, "users") == 0) {
+    if (strcmp(adminCommand, "users") == 0) {
         printf("\nComando \"users\"\n");
     }
 
@@ -266,15 +253,15 @@ int main(int argc, char *argv[]) {
     signal(SIGTERM, terminate);
 
     // Create and open general pipe
-    game->pipegen_fd = create_and_open(GENERAL_PIPE, O_RDWR);
+    game->generalPipe = create_and_open(GENERAL_PIPE, O_RDWR);
 
-    if (game->pipegen_fd == -1){
+    if (game->generalPipe == -1){
         perror("\nERRO: nao foi possivel abrir o mecanismo de comunicacao (pipe) geral.\n");
         exitcode = EXIT_FAILURE; terminate(0);
-    } else if (game->pipegen_fd == -2) {
+    } else if (game->generalPipe == -2) {
         printf("\nJa existe uma instancia do Motor a executar! So e permitido uma!\n");
         exitcode = EXIT_FAILURE; terminate(0);
-    } else if (game->pipegen_fd == -3) {
+    } else if (game->generalPipe == -3) {
         perror("\nERRO: falha ao criar o mecanismo de comunicacao (pipe) geral.\n");
         exitcode = EXIT_FAILURE; terminate(0);
     }

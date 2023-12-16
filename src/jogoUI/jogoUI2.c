@@ -5,14 +5,25 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <signal.h>
 
 #include "../common/utils.h"
 #include "../common/constants.h"
+#include "../common/messages.h"
 
+SignUpMessage signUp;
+
+void terminate(int signum){
+    unlink(signUp.pipePath);
+}
 
 int main(int argc, char *argv[]) {
 
-    char username[MAX_PLAYER_NAME];
+
+    // Register signal handler
+    signal(SIGINT, terminate);
+    signal(SIGTERM, terminate);
+
 
     if (argc < 2) {
         perror("Nome do jogador como argumento.\n");
@@ -23,13 +34,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    char myPipeName[MAX_PLAYER_NAME + strlen(PIPE_DIRECTORY)];
-    strncpy(username, argv[1], MAX_PLAYER_NAME);
-    strcpy(myPipeName, PIPE_DIRECTORY);
-    strcat(myPipeName, username);
+    strncpy(signUp.username, argv[1], MAX_PLAYER_NAME);
+    strcpy(signUp.pipePath, PIPE_DIRECTORY);
+    strcat(signUp.pipePath, signUp.username);
 
     // Create and open general pipe
-    int myPipe = create_and_open(myPipeName, O_RDWR);
+    int myPipe = create_and_open(signUp.pipePath, O_RDWR);
     if (myPipe == -1){
         perror("\nERRO: nao foi possivel abrir o pipe deste cliente.\n");
         return -1;
@@ -41,20 +51,20 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    int pipegen_fd = open(GENERAL_PIPE, O_WRONLY);
-    if (pipegen_fd == -1){
+    int generalPipe = open(GENERAL_PIPE, O_WRONLY);
+    if (generalPipe == -1){
         perror("\nERRO ao tentar abrir o pipe geral.\n");
         return -1;
     }
 
-    write(pipegen_fd, &username, sizeof(username));
-    close(pipegen_fd);
+    write(generalPipe, &signUp, sizeof(signUp));
+
 
     printf("waiting");
 
     sleep(1000000);
 
     close(myPipe);
-    unlink(myPipeName);
+    close(generalPipe);
     return 0;
 }

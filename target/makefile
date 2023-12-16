@@ -4,6 +4,8 @@ jogoUI_dir = ../src/jogoUI
 common_dir = ../src/common
 
 
+all: motor jogoUI jogoUI2
+
 motor: bot utils.o $(motor_dir)/* $(common_dir)/*
 	gcc -c $(motor_dir)/motor_init.c -o motor_init.o
 	gcc -c $(motor_dir)/motor_signup.c -o motor_signup.o
@@ -19,7 +21,6 @@ jogoUI: $(jogoUI_dir)/* $(common_dir)/*
 utils.o: $(common_dir)/utils.c $(common_dir)/utils.h
 	gcc -c $(common_dir)/utils.c -o utils.o
 
-all: motor jogoUI jogoUI2
 
 
 clean: clean_objects
