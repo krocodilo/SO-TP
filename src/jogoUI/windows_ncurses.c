@@ -165,7 +165,7 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
 }
 
 //mostra numero de pedras no mapa numa janela
-void pedras(WINDOW *win, int height, int width,Game *game) {
+void pedras(WINDOW *win, int height, int width) {
 
 
     int yMax, xMax,a;
@@ -187,7 +187,7 @@ void pedras(WINDOW *win, int height, int width,Game *game) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,9,"%d",game->nRocks);
+    mvwprintw(win, 1,9,"");
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -195,7 +195,7 @@ void pedras(WINDOW *win, int height, int width,Game *game) {
 }
 
 //mostra numero de bloqueios no mapa numa janela
-void bloqueios(WINDOW *win, int height, int width,Game *game) {
+void bloqueios(WINDOW *win, int height, int width) {
 
 
     int yMax, xMax,a;
@@ -217,7 +217,7 @@ void bloqueios(WINDOW *win, int height, int width,Game *game) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,12,"%d",game->nBlocks);
+    mvwprintw(win, 1,12,"");
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -225,7 +225,7 @@ void bloqueios(WINDOW *win, int height, int width,Game *game) {
 }
 
 //mostra nivel do jogo numa janela *precisa de ser visto
-void nivel(WINDOW *win, int height, int width,Game *game) {
+void nivel(WINDOW *win, int height, int width) {
 
     int yMax, xMax,xMin, yMin,a;
     getmaxyx(stdscr, yMax, xMax);
@@ -255,7 +255,7 @@ void nivel(WINDOW *win, int height, int width,Game *game) {
 }
 
 //mostra nome de jogadores no mapa numa janela *precisa de ser visto
-void jogadores(WINDOW *win, int height, int width,Game *game) {
+void jogadores(WINDOW *win, int height, int width) {
 
 
     int yMax, xMax,a;
@@ -278,9 +278,9 @@ void jogadores(WINDOW *win, int height, int width,Game *game) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-    for (int i = 0; i < game->nPlayers; i++) {
-        mvwprintw(win, 1,12,"%s", game->players[i].username);
-    }
+   // for (int i = 0; i < game->nPlayers; i++) {
+     //   mvwprintw(win, 1,12,"%s", game->players[i].username);
+    //}
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -288,7 +288,7 @@ void jogadores(WINDOW *win, int height, int width,Game *game) {
 }
 
 //mostra O COMANDO ACIONADO
-void executeCommand(char *command,WINDOW *win, int height, int width,Game *game) {
+void executeCommand(char *command,WINDOW *win, int height, int width) {
 
     echo();
 
@@ -375,7 +375,7 @@ void comandos2(WINDOW * comandwin){
 }
 
 // Função para processar comandos do jogador
-WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
+WINDOW* processCommand(char *command,WINDOW * comando) {
 
     WINDOW *centeredWin;
 
@@ -385,7 +385,7 @@ WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
         for (int i = 0; i < game->nPlayers; i++) {
             printf("- %s\n", game->players[i].name);
         }*/
-        executeCommand(command,centeredWin, 0, 0, game);
+        executeCommand(command,centeredWin, 0, 0);
     }else
 
     if (strncmp(command, "msg", 3) == 0) {
@@ -404,11 +404,11 @@ WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
             } else {
                 mvprintw(12, 0, "Erro: Utilizador %s não encontrado.", targetName);
             }*/
-            executeCommand(cmdCopy,centeredWin, 0, 0,game);
+            executeCommand(cmdCopy,centeredWin, 0, 0);
         }
         else
         {
-            executeCommand("msg <nome_utilizador> <mensagem>",centeredWin, 0, 0, game);
+            executeCommand("msg <nome_utilizador> <mensagem>",centeredWin, 0, 0);
         }
 
 
@@ -417,17 +417,17 @@ WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
         ////////////////////////////////////////////////
     else
     if (strcmp(command, "n1") == 0) {
-        game->currentLevel=1;
+        //game->currentLevel=1;
         //lerMapa(game);
     }
     else
     if (strcmp(command, "n2") == 0) {
-        game->currentLevel=2;
+        //game->currentLevel=2;
         //lerMapa(game);
     }
     else
     if (strcmp(command, "n3") == 0) {
-        game->currentLevel=3;
+        //game->currentLevel=3;
         //lerMapa(game);
     }
         ////////////////////////////////////////////////////77
@@ -441,7 +441,7 @@ WINDOW* processCommand(Game *game, char *command,WINDOW * comando) {
 
     else
     {
-        executeCommand("Comando invalido!",centeredWin, 0, 0, game);
+        executeCommand("Comando invalido!",centeredWin, 0, 0);
     }
 
     return 0;

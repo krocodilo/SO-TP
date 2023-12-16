@@ -10,7 +10,7 @@ Character initCharacter(int x, int y, char symbol) {
 }
 
 // Função para controlo de teclas
-void controloTeclas(Game *game) {
+void controloTeclas() {
     keypad(stdscr, TRUE);
     WINDOW * mapawin;
     WINDOW * nivelwin;
@@ -24,11 +24,11 @@ void controloTeclas(Game *game) {
     //lerMapa(game);
     
     mostraMapa(mapawin, 18, 81, &player);
-    nivel(nivelwin, 0, 0,game);
-    jogadores(jogadoreswin, 0, 0, game);
-    bloqueios(bloqueioswin, 0, 0,game);
-    pedras(pedraswin, 0, 0,game);
-    executeCommand(" ",notificationwin, 0, 0,game);
+    nivel(nivelwin, 0, 0);
+    jogadores(jogadoreswin, 0, 0);
+    bloqueios(bloqueioswin, 0, 0);
+    pedras(pedraswin, 0, 0);
+    executeCommand(" ",notificationwin, 0, 0);
     char *command;
 
     comandos2(Commandwin);  
@@ -90,7 +90,7 @@ void controloTeclas(Game *game) {
             case ' ':                          
                     // Se estiver no modo de comando, execute o comando
                     command = comandos(Commandwin);
-                    processCommand(game, command, Commandwin);
+                    processCommand( command, Commandwin);
                     free( command);
                     comandos2(Commandwin);  
                                                                      
@@ -112,12 +112,6 @@ int main(int argc, char *argv[]) {
     game.currentLevel=1;
     game.nBlocks=0;
     game.nRocks=0;
-
-    // Criar FIFO de entrada (para receber comandos)
-    //mkfifo(FIFO_FILE_IN, 0666);
-
-    // Criar FIFO de saída (para enviar notificações)
-    //mkfifo(FIFO_FILE_OUT, 0666);
 
     printf("\e[8;28;83t");
 
@@ -142,7 +136,7 @@ int main(int argc, char *argv[]) {
     flushinp();
     
     
-    controloTeclas(&game);
+    controloTeclas();
     
     //getch();
     endwin();
