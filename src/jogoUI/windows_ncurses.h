@@ -10,9 +10,17 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include "../motor/data_structs.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+
+#include "../motor/data_structs.h"
+#include "../common/utils.h"
+#include "../common/constants.h"
+#include "../common/messages.h"
+
 
 #define MAX_COMMAND_LENGTH 50
 #define MAX_ACTIVE_PLAYERS 5
@@ -40,15 +48,17 @@ void clearCharacter(WINDOW *win, Character character);
 void moveCharacter(WINDOW *win, Character *character, int dx, int dy);
 void destroyCharacter(Character *character);
 
+void terminate(int signum);
+int getNextMessageType(int pipe_fd);
+bool getMessage(int pipe_fd, void* buffer, int size);
+void run(int myPipe);
+
 Character initCharacter(int x, int y, char symbol);
 int isLinhaEmBranco(const char *linha);
 
 
 //int validatePlayerName(Player activePlayers[], int numActivePlayers, char *name);
 //void listBots(Game *game);
-
-
-
 
 
 #endif //SO_TP_WINDOWS_NCURSES_H

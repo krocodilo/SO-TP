@@ -1,5 +1,41 @@
 #include "windows_ncurses.h"
 
+SignUpMessage signUp;
+
+void terminate(int signum){
+    unlink(signUp.pipePath);
+}
+
+int getNextMessageType(int pipe_fd){
+    int msgType = -1;
+
+    if (read(pipe_fd, &msgType, sizeof(int)) != sizeof(int) ){
+        perror("\nERRO: foi recebida uma mensagem incompleta.\n");
+        return -1;
+    }
+    return msgType;
+}
+
+bool getMessage(int pipe_fd, void* buffer, int size){
+    if (read(pipe_fd, buffer, size) != sizeof(int) ){
+        perror("\nERRO: foi recebida uma mensagem incompleta.\n");
+        return false;
+    }
+    return true;
+}
+
+void run(int myPipe){
+
+    int msgType = getNextMessageType(myPipe);
+    if(msgType == -1)
+        return;
+
+    Map map;
+
+    if( getMessage(myPipe, &map, sizeof(Map)) == false)
+        return;
+}
+
 // Função para inicializar o personagem
 Character initCharacter(int x, int y, char symbol) {
     Character character;
@@ -20,8 +56,11 @@ void controloTeclas() {
     WINDOW * Commandwin;
     WINDOW * notificationwin;
     
-    Character player = initCharacter(3, 2, 'P'); 
-    //lerMapa(game);
+    Character player = initCharacter(3, 15, 'H');
+
+    //lerMapa
+
+
     
     mostraMapa(mapawin, 18, 81, &player);
     nivel(nivelwin, 0, 0);
@@ -42,7 +81,7 @@ void controloTeclas() {
         switch (ch) {
             case KEY_UP:
                 
-                if (//!verificaColisao(map.cmap, player.y - 1, player.x) &&
+                if (!verificaColisao(map.cmap, player.y - 1, player.x) &&
                 ((player.y-1) > 1) && 
                 ((player.x) > 1) && 
                 ((player.y-1) < 16) && 
@@ -53,7 +92,7 @@ void controloTeclas() {
                 }
                 break;
 	    case KEY_DOWN:
-		if (//!verificaColisao(map.cmap, player.y + 1, player.x) &&
+		if (!verificaColisao(map.cmap, player.y + 1, player.x) &&
 		((player.y+1) > 1) && 
                 ((player.x) > 1) && 
                 ((player.y+1) < 16) && 
@@ -64,7 +103,7 @@ void controloTeclas() {
 		}
 		break;
 	    case KEY_LEFT:
-		if (//!verificaColisao(map.cmap, player.y, player.x - 2) &&
+		if (!verificaColisao(map.cmap, player.y, player.x - 2) &&
 		((player.y) > 1)&& 
                 ((player.x-2) > 1) && 
                 ((player.y) < 16) && 
@@ -76,7 +115,7 @@ void controloTeclas() {
 		}
 		break;
 	    case KEY_RIGHT:
-		if (//!verificaColisao(map.cmap, player.y, player.x + 1) &&
+		if (!verificaColisao(map.cmap, player.y, player.x + 1) &&
 		((player.y) > 1)&& 
                 ((player.x+2) > 1) && 
                 ((player.y) < 16) && 
@@ -106,12 +145,6 @@ void controloTeclas() {
 }
 
 int main(int argc, char *argv[]) {
-    Player activePlayers[MAX_ACTIVE_PLAYERS];
-
-    //Game game;
-    //game.currentLevel=1;
-    //game.nBlocks=0;
-    //game.nRocks=0;
 
     printf("\e[8;28;83t");
 
@@ -119,18 +152,57 @@ int main(int argc, char *argv[]) {
     noecho();
     keypad(stdscr, TRUE);
     
+    ////////////////////////////////////////////
+
+    // Register signal handler
+    signal(SIGINT, terminate);
+    signal(SIGTERM, terminate);
+
+
     if (argc < 2) {
-        printf("Nome do jogador como argumento.\n");
+        perror("Nome do jogador como argumento.\n");
+        return 1;
+    }
+    if(strlen(argv[1]) > MAX_PLAYER_NAME){
+        fprintf(stderr, "Nome do jogador e demasiado longo. Maximo de %d caracteres.", MAX_PLAYER_NAME);
         return 1;
     }
 
-    //strncpy(game.players[0].username, argv[1], MAX_PLAYER_NAME - 1);
-    //game.players[0].username[MAX_PLAYER_NAME - 1] = '\0';
+    strncpy(signUp.username, argv[1], MAX_PLAYER_NAME);
+    strcpy(signUp.pipePath, PIPE_DIRECTORY);
+    strcat(signUp.pipePath, signUp.username);
+
+    // Create and open general pipe
+    int myPipe = create_and_open(signUp.pipePath, O_RDWR);
+    if (myPipe == -1){
+        perror("\nERRO: nao foi possivel abrir o pipe deste cliente.\n");
+        return -1;
+    } else if (myPipe == -2) {
+        printf("\nJa existe um utilizador com este username.\n");
+        return -1;
+    } else if (myPipe == -3) {
+        perror("\nERRO: falha ao criar o pipe deste cliente.\n");
+        return -1;
+    }
+
+    int generalPipe = open(GENERAL_PIPE, O_WRONLY);
+    if (generalPipe == -1){
+        perror("\nERRO ao tentar abrir o pipe geral.\n");
+        return -1;
+    }
+
+    write(generalPipe, &signUp, sizeof(signUp));
 
 
-    //game.nPlayers++;
+    printf("waiting");
 
-    
+    sleep(1000000);
+
+    close(myPipe);
+    close(generalPipe);
+
+    ////////////////////////////////////////////
+
     runMenuLogic();
     	
     flushinp();

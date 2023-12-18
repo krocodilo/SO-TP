@@ -196,13 +196,23 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
     return 0;
 }
 
+// Função para inicializar o personagem
+Character initCharacter(int x, int y, char symbol) {
+    Character character;
+    character.x = x;
+    character.y = y;
+    character.symbol = symbol;
+    return character;
+}
 
 // Função para inicializar as coordenadas x e y dos jogadores
-void initializePlayerCoordinates(Player players[], int numPlayers) {
+void initializePlayers(Player players[], int numPlayers) {
     for (int i = 0; i < numPlayers; i++) {
         // Inicializa as coordenadas x para cada jogador com valores aleatórios entre 3 e 37
-        players[i].info.x = rand() % (37 - 3 + 1) + 3;
-        players[i].info.y = 15;  // Você pode definir a coordenada y conforme necessário
+        players[i].info = initCharacter(rand() % (37 - 3 + 1) + 3, 0, 'P'); // 'P' é apenas um exemplo
+        // Define o símbolo como o primeiro caractere no campo username
+        players[i].username[0] = players[i].info.symbol;
+        // Os caracteres restantes no campo username podem ser definidos conforme necessário
     }
 }
 
