@@ -18,13 +18,20 @@ typedef struct {
 typedef struct {
     char name[MAX_BOT_NAME];
     pid_t pid;
+    int pipe_fd[2];  // Novo campo
 } Bot;
 
+typedef struct{
+    int x;
+    int y;
+    char symbol;
+} Character;
+
 typedef struct {
+    Character info;
     char username[MAX_PLAYER_NAME];
     int pipe;
 } Player;
-
 
 typedef struct {
     Player players[MAX_PLAYERS];
@@ -46,11 +53,6 @@ typedef struct {
 } GameSettings;
 
 
-typedef struct{
-    int x;
-    int y;
-    char symbol;
-} Character;
 
 
 

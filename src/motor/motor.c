@@ -86,94 +86,64 @@ void lerMapa(Game  *game) {
 
 
 
-void runBots(Game *game) {
 
+
+int testBot(Bot *bot) {
+    if (pipe(bot->pipe_fd) == -1) {
+        perror("Erro ao criar pipe");
+        exit(EXIT_FAILURE);
+    }
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // Processo do bot
+        close(bot->pipe_fd[0]);  // Fecha a extremidade de leitura do pipe no processo do bot
+        close(STDOUT_FILENO);    // Fecha STDOUT padrão
+
+        // Substitui a imagem do processo do bot com o programa ./bot
+        dup(bot->pipe_fd[1]);  // Duplica a extremidade de escrita do pipe para STDOUT
+        close(bot->pipe_fd[1]);  // Fecha a extremidade de escrita do pipe (ainda é mantida por STDOUT)
+
+        execlp("./bot", "./bot", "1", "10", (char *)NULL);
+
+        // Se execlp() falhar
+        perror("Erro ao executar o bot");
+        exit(EXIT_FAILURE);
+    } else if (pid > 0) {
+        // Processo pai
+        close(bot->pipe_fd[1]);  // Fecha a extremidade de escrita do pipe no processo pai
+        bot->pid = pid;
+        return bot->pipe_fd[0];  // Retorna a extremidade de leitura do pipe no processo pai
+    } else {
+        perror("Erro ao criar processo para o bot");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void runBots(Game *game) {
     if (game->nBots < MAX_BOTS) {
         Bot newBot;
         snprintf(newBot.name, sizeof(newBot.name), "Bot%d", game->nBots + 1);
 
-        pid_t pid = fork();
+        // Executa o bot e obtém a extremidade de leitura do pipe
+        int pipe_fd = testBot(&newBot);
 
-        if (pid == 0) {
-            // Processo do bot
-            execlp("./bot", "./bot", "1", "10", (char *)NULL);
-            // Se execlp() falhar
-            perror("Erro ao executar o bot");
-            exit(1);
-        } else if (pid > 0) {
-            // Processo pai
-            newBot.pid = pid;
-            game->bots[game->nBots++] = newBot;
-            printf("Bot lançado: %s\n", newBot.name);
-        } else {
-            perror("Erro ao criar processo para o bot");
-        }
+        // Armazena a informação do bot no jogo
+        game->bots[game->nBots++] = newBot;
+
+        printf("Bot lançado: %s\n", newBot.name);
+        printf("Pipe FD para %s: %d\n", newBot.name, pipe_fd);
     } else {
         printf("Limite de bots alcançado\n");
     }
 }
 
-void testBot(Game *game) {
-
-
-
-
-    // TODO: Esta função já não será necessária para a meta 2, mas tem codigo que tem de ser aplicado à runBots()
-
-
-
-
-//    runBots(game);
-
-    if (game->nBots == 0) {
-        // Seleciona o primeiro bot para teste (índice 0)
-//        Bot *bot = &game->bots[0];
-
-        // Cria um pipe para comunicação entre o motor e o bot
-        int pipe_fd[2];
-        if (pipe(pipe_fd) == -1) {
-            perror("Erro ao criar o pipe");
-            return;
-        }
-
-        pid_t pid = fork();
-
-        if (pid == 0) {
-            // Processo do bot
-            close(pipe_fd[0]);  // Fecha a extremidade de leitura do pipe no processo do bot
-            dup2(pipe_fd[1], STDOUT_FILENO);  // Redireciona a saída padrão para o pipe
-            close(pipe_fd[1]);  // Fecha a extremidade de escrita do pipe no processo do bot
-
-            // Executa o bot
-            execlp("./bot", "./bot", "1", "10", (char *)NULL);
-
-            // Se execlp() falhar
-            perror("Erro ao executar o bot");
-            exit(1);
-        } else if (pid > 0) {
-            // Processo pai
-            close(pipe_fd[1]);  // Fecha a extremidade de escrita do pipe no processo pai
-
-            char buffer[50];
-            ssize_t bytesRead;
-
-            // Lê as mensagens do bot a partir do pipe
-            while ((bytesRead = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) {
-                printf("RECEBI: %.*s", (int)bytesRead, buffer);
-            }
-
-            close(pipe_fd[0]);  // Fecha a extremidade de leitura do pipe no processo pai
-        } else {
-            perror("Erro ao criar processo para o bot");
-        }
-    } else {
-        printf("Nenhum bot disponível para teste\n");
-    }
-
-}
-
-
 int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
+
+    if (strcmp(adminCommand, "run_bots") == 0) {
+        runBots(game);
+    } else
 
     if (strcmp(adminCommand, "users") == 0) {
         printf("\nComando \"users\"\n");
@@ -227,7 +197,14 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
 }
 
 
-
+// Função para inicializar as coordenadas x e y dos jogadores
+void initializePlayerCoordinates(Player players[], int numPlayers) {
+    for (int i = 0; i < numPlayers; i++) {
+        // Inicializa as coordenadas x para cada jogador com valores aleatórios entre 3 e 37
+        players[i].info.x = rand() % (37 - 3 + 1) + 3;
+        players[i].info.y = 15;  // Você pode definir a coordenada y conforme necessário
+    }
+}
 
 
 
@@ -241,6 +218,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     resetGame(game);
+    game->nBots=0;
 
     // Read Environment Variables
     if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE ){
@@ -248,9 +226,18 @@ int main(int argc, char *argv[]) {
         terminate(0);
     }
 
+
+
     // Register signal handler
     signal(SIGINT, terminate);
     signal(SIGTERM, terminate);
+
+    // Inicialize o gerador de números aleatórios com uma semente
+    srand((unsigned int)time(NULL));
+
+    // Inicialize as coordenadas x e y para todos os jogadores
+    initializePlayerCoordinates(game.players, game->nPlayers);
+
 
     // Create and open general pipe
     game->generalPipe = create_and_open(GENERAL_PIPE, O_RDWR);
