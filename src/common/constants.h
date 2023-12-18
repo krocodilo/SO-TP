@@ -34,5 +34,8 @@
 #define PIPE_PATH_MAX_SIZE (MAX_PLAYER_NAME + sizeof(PIPE_DIRECTORY))
 
 
+// ...
+#define MAX_MESSAGE_SIZE 256
+
 
 #endif

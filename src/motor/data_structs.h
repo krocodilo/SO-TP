@@ -3,6 +3,7 @@
 
 
 #include "../common/constants.h"
+#include "../common/common_data_structs.h"
 
 typedef struct {
     int x, y;
@@ -44,10 +45,6 @@ typedef struct {
     int minPlayers;
 } GameSettings;
 
-
-typedef struct {
-    char cmap[MAP_LINES][MAP_COLS + 1];
-} Map;
 
 typedef struct{
     int x;
