@@ -17,6 +17,45 @@ void terminate(int signum){
     unlink(signUp.pipePath);
 }
 
+
+
+int getNextMessageType(int pipe_fd) {
+    int msgType = -1;
+
+    if (read(pipe_fd, &msgType, sizeof(int)) != sizeof(int) ){
+        perror("\nERRO: foi recebida uma mensagem incompleta.\n");
+        return -1;
+    }
+    return msgType;
+}
+
+bool getMessage(int pipe_fd, void* buffer, int size) {
+    if (read(pipe_fd, buffer, size) != sizeof(int) ){
+        perror("\nERRO: foi recebida uma mensagem incompleta.\n");
+        return false;
+    }
+    return true;
+}
+
+
+#include "../motor/data_structs.h"
+
+void run(int myPipe) {
+
+    int msgType = getNextMessageType(myPipe);
+    if(msgType == -1)
+        return;
+
+    Map map;
+
+    if( getMessage(myPipe, &map, sizeof(Map)) == false)
+        return;
+
+
+}
+
+
+
 int main(int argc, char *argv[]) {
 
 
