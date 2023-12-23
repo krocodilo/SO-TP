@@ -31,3 +31,30 @@ int create_and_open(char* pipename, int flags) {
     }
     return pipe_fd;
 }
+
+
+int readNextMessageType(int pipe_fd) {
+    // Returns -1 if error occured
+    int msgType;
+    if ( read(pipe_fd, &msgType, sizeof(int)) != sizeof(int) )
+        return -1;
+    return msgType;
+}
+
+
+bool readNextMessage(int pipe_fd, void* buffer, int size) {
+
+    if ( read(pipe_fd, buffer, size) != size )
+        return false;
+    return true;
+}
+
+
+bool writeMessage(int pipe_fd, int msgType, void* message, int size) {
+
+    if( write(pipe_fd, &msgType, sizeof(int)) != sizeof(int) )
+        return false;
+    if( write(pipe_fd, message, size) != size )
+        return false;
+    return true;
+}

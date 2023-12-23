@@ -1,12 +1,13 @@
 #ifndef SO_TP_MESSAGES_H
 #define SO_TP_MESSAGES_H
 
+#include "common_data_structs.h"
 #include "constants.h"
 
 
 enum MessageTypes {
     // Sent by motor:
-    NewMap,
+    NewLevel,
     ModifyMap,
     PlayersList,
     Terminate,
@@ -20,7 +21,7 @@ enum MessageTypes {
 
 
     // Common:
-    NewMessage     // to be used by motor and to send messages between clients directly
+    TextMsg     // to be used by motor and to send messages between clients directly
 };
 
 ////////////////////////////////////////////////////
@@ -30,7 +31,7 @@ enum MessageTypes {
 typedef struct {
     int level;
     Map map;
-} NewMapMessage;
+} NewLevelMessage;
 
 typedef struct {
     int x, y;
@@ -44,7 +45,7 @@ typedef struct {
 typedef struct {
     char from[MAX_PLAYER_NAME];
     char message[MAX_MESSAGE_SIZE];
-} Message;
+} TextMessage;
 
 ////////////////////////////////////////////////////
 // Sent by jogoUI:

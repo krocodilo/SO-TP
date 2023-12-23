@@ -12,11 +12,10 @@
 #include "data_structs.h"
 #include "../common/constants.h"
 #include "../common/messages.h"
+#include "../common/utils.h"
 
 
-void waitForClientsSignUp(GameSettings gameSettings, Game* game);
-bool receiveNewPlayer(Player* newPlayer, int generalPipe);
-
+int waitForClientsSignUp(GameSettings gameSettings, Game* game);
 
 
 #endif //SO_TP_MOTOR_SIGNUP_H

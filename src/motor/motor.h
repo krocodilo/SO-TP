@@ -23,12 +23,9 @@
 #define MAX_COMMAND_LENGTH 50
 
 
-int exitcode = EXIT_SUCCESS;
-
-
 Game* game;
 
-Map map;
+Map map[MAX_LEVELS];
 
 
 #endif

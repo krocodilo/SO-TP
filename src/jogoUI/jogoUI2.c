@@ -15,44 +15,25 @@ SignUpMessage signUp;
 
 void terminate(int signum){
     unlink(signUp.pipePath);
+    printf("\nTerminate");
+    fflush(stdout);
 }
 
 
 
-int getNextMessageType(int pipe_fd) {
-    int msgType = -1;
+//void run(int myPipe) {
 
-    if (read(pipe_fd, &msgType, sizeof(int)) != sizeof(int) ){
-        perror("\nERRO: foi recebida uma mensagem incompleta.\n");
-        return -1;
-    }
-    return msgType;
-}
+//    int msgType = getNextMessageType(myPipe);
+//    if(msgType == -1)
+//        return;
+//
+//    Map map;
+//
+//    if( getMessage(myPipe, &map, sizeof(Map)) == false)
+//        return;
+//
 
-bool getMessage(int pipe_fd, void* buffer, int size) {
-    if (read(pipe_fd, buffer, size) != sizeof(int) ){
-        perror("\nERRO: foi recebida uma mensagem incompleta.\n");
-        return false;
-    }
-    return true;
-}
-
-
-#include "../motor/data_structs.h"
-
-void run(int myPipe) {
-
-    int msgType = getNextMessageType(myPipe);
-    if(msgType == -1)
-        return;
-
-    Map map;
-
-    if( getMessage(myPipe, &map, sizeof(Map)) == false)
-        return;
-
-
-}
+//}
 
 
 
@@ -66,11 +47,11 @@ int main(int argc, char *argv[]) {
 
     if (argc < 2) {
         perror("Nome do jogador como argumento.\n");
-        return 1;
+        return EXIT_FAILURE;
     }
     if(strlen(argv[1]) > MAX_PLAYER_NAME){
         fprintf(stderr, "Nome do jogador e demasiado longo. Maximo de %d caracteres.", MAX_PLAYER_NAME);
-        return 1;
+        return EXIT_FAILURE;
     }
 
     strncpy(signUp.username, argv[1], MAX_PLAYER_NAME);
@@ -81,29 +62,72 @@ int main(int argc, char *argv[]) {
     int myPipe = create_and_open(signUp.pipePath, O_RDWR);
     if (myPipe == -1){
         perror("\nERRO: nao foi possivel abrir o pipe deste cliente.\n");
-        return -1;
+        terminate(EXIT_FAILURE);
     } else if (myPipe == -2) {
         printf("\nJa existe um utilizador com este username.\n");
-        return -1;
+        return EXIT_FAILURE;
     } else if (myPipe == -3) {
         perror("\nERRO: falha ao criar o pipe deste cliente.\n");
-        return -1;
+        return EXIT_FAILURE;
     }
 
     int generalPipe = open(GENERAL_PIPE, O_WRONLY);
     if (generalPipe == -1){
         perror("\nERRO ao tentar abrir o pipe geral.\n");
-        return -1;
+        terminate(EXIT_FAILURE);
     }
 
-    write(generalPipe, &signUp, sizeof(signUp));
+    if( ! writeMessage(generalPipe, SignUp, &signUp, sizeof(signUp)) ){
+        perror("\nErro ao enviar mensagem de inscricao para o motor.");
+        terminate(EXIT_FAILURE);
+    }
 
+//    int msgType = SignUp;
+//    if( write(generalPipe, &msgType, sizeof(int)) != sizeof(int) )
+//        return EXIT_FAILURE;
+    printf("\nhere");
 
-    printf("waiting");
+//    if( write(generalPipe, &signUp, sizeof(signUp)) != sizeof(signUp) )
+//        return EXIT_FAILURE;
+    printf("\nFoi enviada mensagem de inscricao.");
 
-    sleep(1000000);
+//    fflush(stdout);
+
+    fd_set read_fds;
+    while(1){
+        printf("\nwaiting...\n");
+        FD_ZERO(&read_fds);         //inicializa a watchlist
+        FD_SET(myPipe, &read_fds);   // add myPipe ao conjunto watchlist
+        FD_SET(0, &read_fds);       //stdin
+        int sval = select(
+                myPipe + 1,  // este fd é o maior de todos os fds
+                &read_fds, NULL, NULL, NULL
+        );
+        if( ! FD_ISSET(myPipe, &read_fds))
+            continue;
+
+        printf("\nbefore reading.");
+        switch (readNextMessageType(myPipe)) {
+            case NewLevel: {
+                NewLevelMessage msg;
+                if( ! readNextMessage(myPipe, &msg, sizeof(msg)) ){
+                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    break;
+                }
+                for(int i = 0; i < MAP_LINES; i++){
+                    printf("%s\n", msg.map.cmap[i]);
+                }
+            }
+            default:
+                perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
+        }
+        fflush(stdout);
+    }
+
+//    sleep(1000000);
 
     close(myPipe);
     close(generalPipe);
+    unlink(signUp.pipePath);
     return 0;
 }

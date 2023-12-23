@@ -2,8 +2,10 @@
 
 
 
-void terminate(int signum){
+void terminate(int exitcode){
     printf("\nTerminating...\n");
+
+    // wait for all threads to join
 
     // Terminate all bots
     for( ;game->nBots > 0; game->nBots-- ){
@@ -18,70 +20,72 @@ void terminate(int signum){
 
     // Close client pipes
 
+    free(game);
+    fflush(stdout);
     exit(exitcode);
 }
 
-//Função para verificar se há colisão na próxima posição
-bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
-    // Ajusta as coordenadas do jogador para corresponder ao mapeamento no mapa
-    int playerMapY = nextY - 1;
-    int playerMapX = nextX / 2;
 
-    // Verifica se a próxima posição contém 'X' (obstáculo)
-    return mapa[playerMapY][playerMapX] == 'X';
-}
 
-int isLinhaEmBranco(const char *linha) {
+
+
+
+bool isLinhaEmBranco(const char *linha) {
     while (*linha) {
         if (!isspace(*linha)) {
-            return 0;  // A linha não está em branco
+            return false;  // A linha não está em branco
         }
         linha++;
     }
-    return 1;  // A linha está em branco
+    return true;  // A linha está em branco
 }
 
-void lerMapa(Game  *game) {
-    char filepath[100];  // Ajuste o tamanho conforme necessário
+int lerMapas() {
+    char filepath[100], filename[20];
 
-    if (game->currentLevel== 1){
-        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN1.txt");
-        //snprintf(filepath, sizeof(filepath), "../src/jogoUI/%s", "labirinto.txt");
-    }
-    if (game->currentLevel == 2){
-        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN2.txt");
-    }
-    if (game->currentLevel == 3){
-        snprintf(filepath, sizeof(filepath), "./maps/%s", "labN3.txt");
-    }
+//    switch (game->currentLevel) {
+//        case 1: snprintf(filepath, sizeof(filepath), "./maps/%s", "labN1.txt");
+//            break;
+//        case 2: snprintf(filepath, sizeof(filepath), "./maps/%s", "labN2.txt");
+//            break;
+//        case 3: snprintf(filepath, sizeof(filepath), "./maps/%s", "labN3.txt");
+//            break;
+//    }
 
-    FILE *filePointer;
-    filePointer = fopen(filepath, "r");
+    for(int i = 0; i < MAX_LEVELS; i++){
 
-    if (filePointer == NULL) {
-        perror("Erro ao abrir o arquivo");
-        return;
-    }
+        snprintf(filename, sizeof(filename), "labN%d.txt", i+1);
+        snprintf(filepath, sizeof(filepath), "./maps/%s", filename);
 
-    int linhaAtual = 0;
-    char buffer[MAP_COLS + 2];  // +2 para incluir espaço para '\n' e '\0'
+        FILE *filePointer;
+        filePointer = fopen(filepath, "r");
 
-    while (linhaAtual < MAP_LINES && fgets(buffer, sizeof(buffer), filePointer) != NULL) {
-        size_t comprimento = strlen(buffer);
-
-        // Remover o caractere de nova linha, se existir
-        if (comprimento > 0 && buffer[comprimento - 1] == '\n') {
-            buffer[comprimento - 1] = '\0';
+        if (filePointer == NULL) {
+            fprintf(stderr, "Erro ao abrir o ficheiro %s", filepath);
+            return EXIT_FAILURE;
         }
 
-        // Verificar se a linha não está em branco
-        if (!isLinhaEmBranco(buffer)) {
-            strcpy(map.cmap[linhaAtual], buffer);
-            linhaAtual++;
-        }
-    }
+        int linhaAtual = 0;
+        char buffer[MAP_COLS + 2];  // +2 para incluir espaço para '\n' e '\0'
 
-    fclose(filePointer);
+        while (linhaAtual < MAP_LINES && fgets(buffer, sizeof(buffer), filePointer) != NULL) {
+            size_t comprimento = strlen(buffer);
+
+            // Remover o caractere de nova linha, se existir
+            if (comprimento > 0 && buffer[comprimento - 1] == '\n') {
+                buffer[comprimento - 1] = '\0';
+            }
+
+            // Verificar se a linha não está em branco
+            if (!isLinhaEmBranco(buffer)) {
+                strncpy(map[i].cmap[linhaAtual], buffer, MAP_COLS);
+                linhaAtual++;
+            }
+        }
+
+        fclose(filePointer);
+    }
+    return EXIT_SUCCESS;
 }
 
 
@@ -196,57 +200,57 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
     return 0;
 }
 
-// Função para inicializar o personagem
-Character initCharacter(int x, int y, char symbol) {
-    Character character;
-    character.x = x;
-    character.y = y;
-    character.symbol = symbol;
-    return character;
-}
 
-// Função para inicializar as coordenadas x e y dos jogadores
-void initializePlayers(Player players[], int numPlayers) {
-    for (int i = 0; i < numPlayers; i++) {
-        // Inicializa as coordenadas x para cada jogador com valores aleatórios entre 3 e 37
-        players[i].info = initCharacter(rand() % (37 - 3 + 1) + 3, 0, 'P'); // 'P' é apenas um exemplo
-        // Define o símbolo como o primeiro caractere no campo username
-        players[i].username[0] = players[i].info.symbol;
-        // Os caracteres restantes no campo username podem ser definidos conforme necessário
+
+void* gameThread(void* arg) {
+//    Game* game = (Game*) arg;
+
+    game->currentLevel = 1;
+    while(game->currentLevel <= MAX_LEVELS ) {
+        printf("Iniciou o nivel %d", game->currentLevel);
+        fflush(stdout);
+
+        NewLevelMessage newMap = {game->currentLevel};
+        memcpy(&newMap, &map[game->currentLevel-1], sizeof(Map));
+
+        for(int i = 0; i < game->nPlayers; i++)
+            if( ! writeMessage(game->players[i].pipe, NewLevel, &newMap, sizeof(newMap)) ){
+                fprintf(stderr, "Erro ao enviar mapa")
+            }
+
+        sleep(1000000000);
+        game->currentLevel++;
     }
 }
-
 
 
 int main(int argc, char *argv[]) {
     GameSettings gameSettings;
 
+    // Inicialize o gerador de números aleatórios com uma semente
+    srand((unsigned int)time(NULL));
 
+    // Read all maps
+    if( lerMapas() == EXIT_FAILURE)
+        return EXIT_FAILURE;
+
+    // Initialize Game Structure
     game = malloc(sizeof(Game));
     if (game == NULL){
         perror("\nERRO: ao alocar memoria para o jogo.\n");
         return EXIT_FAILURE;
     }
     resetGame(game);
-    game->nBots=0;
+
 
     // Read Environment Variables
-    if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE ){
-        exitcode = EXIT_FAILURE;
-        terminate(0);
-    }
-
+    if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE )
+        terminate(EXIT_FAILURE);
 
 
     // Register signal handler
     signal(SIGINT, terminate);
     signal(SIGTERM, terminate);
-
-    // Inicialize o gerador de números aleatórios com uma semente
-    srand((unsigned int)time(NULL));
-
-    // Inicialize as coordenadas x e y para todos os jogadores
-    initializePlayerCoordinates(game.players, game->nPlayers);
 
 
     // Create and open general pipe
@@ -254,19 +258,30 @@ int main(int argc, char *argv[]) {
 
     if (game->generalPipe == -1){
         perror("\nERRO: nao foi possivel abrir o mecanismo de comunicacao (pipe) geral.\n");
-        exitcode = EXIT_FAILURE; terminate(0);
+        terminate(EXIT_FAILURE);
     } else if (game->generalPipe == -2) {
         printf("\nJa existe uma instancia do Motor a executar! So e permitido uma!\n");
-        exitcode = EXIT_FAILURE; terminate(0);
+        terminate(EXIT_FAILURE);
     } else if (game->generalPipe == -3) {
         perror("\nERRO: falha ao criar o mecanismo de comunicacao (pipe) geral.\n");
-        exitcode = EXIT_FAILURE; terminate(0);
+        terminate(EXIT_FAILURE);
     }
 
-    while(true){
-        printf("\n\nStarting a new game!\n");
 
-        waitForClientsSignUp(gameSettings, game);
+    while(true){
+        printf("\n\nA iniciar novo jogo!\n");
+
+        if( waitForClientsSignUp(gameSettings, game) == EXIT_FAILURE) {
+            terminate(EXIT_FAILURE);
+        }
+
+        // Inicialize as coordenadas x e y para todos os jogadores
+//        initializePlayerCoordinates(game.players, game->nPlayers);
+
+        pthread_t id;
+        pthread_create(&id, NULL, gameThread, NULL );
+
+        pthread_join(id, NULL);
     }
 
 
