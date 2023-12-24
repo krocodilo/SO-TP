@@ -21,14 +21,9 @@ typedef struct {
     int pipe_fd[2];  // Novo campo
 } Bot;
 
-typedef struct{
-    int x;
-    int y;
-    char symbol;
-} Character;
-
 typedef struct {
     Character info;
+    int pid;
     char username[MAX_PLAYER_NAME];
     int pipe;
 } Player;

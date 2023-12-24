@@ -1,5 +1,6 @@
-#ifndef SO_TP_MOTOR_H
-#define SO_TP_MOTOR_H
+#ifndef SO_TP_MOTOR_BOTS_H
+#define SO_TP_MOTOR_BOTS_H
+
 
 #include <ctype.h>
 #include <stdio.h>
@@ -11,21 +12,10 @@
 #include <signal.h>
 #include <string.h>
 #include <time.h>
-#include <sys/wait.h>
 #include <pthread.h>
 
-#include "data_structs.h"
 #include "../common/constants.h"
-#include "../common/utils.h"
-#include "motor_init.h"
-#include "motor_signup.h"
-
-#define MAX_COMMAND_LENGTH 50
+#include "data_structs.h"
 
 
-Game* game;
-
-Map map[MAX_LEVELS];
-
-
-#endif
+#endif //SO_TP_MOTOR_BOTS_H

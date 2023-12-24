@@ -26,6 +26,7 @@
 // Additional Constants
 #define MAX_PLAYER_NAME 30
 #define MAX_BOT_NAME 30
+#define MAX_COMMAND_LENGTH 50
 
 
 // Pipes

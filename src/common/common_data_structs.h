@@ -10,5 +10,11 @@ typedef struct {
 } Map;
 
 
+typedef struct{
+    int x;
+    int y;
+    char symbol;
+} Character;
+
 
 #endif //SO_TP_COMMON_DATA_STRUCTS_H

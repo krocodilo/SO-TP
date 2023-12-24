@@ -1,6 +1,6 @@
 #include "motor_signup.h"
 
-bool receiveNewPlayer(Player* newPlayer, int generalPipe);
+void receiveNewPlayer(Game* game);
 void printCommandInstructions();
 int readSignupCommands(Game* game);
 bool keepWaiting();
@@ -10,35 +10,28 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
     /*
      * Wait for enough players to sign up
      */
+    int hasTimedOut = false;
+    game->nPlayers = 0;
 
-    //cosntrucao da struct timeval para usar no select
+    // To be used with select()
     struct timeval waitTime = {gameSettings.signupWindowDurationSeconds, 0};
-    fd_set read_fds;
-    int sval, hasTimedOut = false;
+    fd_set selectHandler;
+    int pipesToWatch[2] = {game->generalPipe, 0};
 
-    printf("\n\nEsta aberta a inscricao de jogadores...\n\n");
+    printf("\n\nEsta aberta a inscricao de jogadores...\n");
 
     while(game->nPlayers < MAX_PLAYERS &&
           !(hasTimedOut && game->nPlayers >= gameSettings.minPlayers)
         // sai se ja terminou a espera, mas entretanto ja tem o minimo de jogadores
             ){
 
-        FD_ZERO(&read_fds);         //inicializa a watchlist
-        FD_SET(game->generalPipe, &read_fds);   // add generalPipe ao conjunto watchlist
-        FD_SET(0, &read_fds);                   // STDIN
+        int sval = selectPipe(&selectHandler, pipesToWatch, sizeof(pipesToWatch), &waitTime);
 
-        sval = select(
-                game->generalPipe + 1,  // este fd é o maior de todos os fds
-                &read_fds, NULL, NULL,
-                &waitTime               // cada uso do select decrementa o waitTime
-        );
-
-        if (FD_ISSET(game->generalPipe, &read_fds)) {
+        if( pipeIsSet(game->generalPipe, &selectHandler) ){
             // Read pipe
-            if ( receiveNewPlayer(&game->players[game->nPlayers], game->generalPipe) )
-                game->nPlayers++;
+            receiveNewPlayer(game);
         }
-        if (FD_ISSET(0, &read_fds)) {
+        if( pipeIsSet(0, &selectHandler) ){
             // Read STDIN
             switch ( readSignupCommands(game) ) {
                 case EXIT_FAILURE: return EXIT_FAILURE;
@@ -66,43 +59,53 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
 }
 
 
-bool receiveNewPlayer(Player* newPlayer, int generalPipe){
+void receiveNewPlayer(Game* game){
     /*
      * read a new player from the general pipe
      */
 
+    Player* newPlayer = &game->players[game->nPlayers];
+
     SignUpMessage msg;
 
-    if( readNextMessageType(generalPipe) != SignUp ){
+    if( readNextMessageType(game->generalPipe) != SignUp ){
         // todo clean pipe?
         perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
-        return false;
+        return;
     }
 
-    if( ! readNextMessage(generalPipe, &msg, sizeof(msg)) ){
+    if( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ){
         perror("\nErro ao ler a proxima mensagem no pipe.");
+        return;
     }
 
-    // Todo - if username already exists, means the pipe is new, so replace it here
+    // If username already exists, means user restarted client app, so pipe and pid are different
+    for(int i = 0; i < game->nPlayers; i++)
+        if(strncmp(game->players[i].username, msg.username, MAX_PLAYER_NAME) == 0)
+            newPlayer = &game->players[i];
 
-
-
-
-
-    strcpy(newPlayer->username, msg.username);
-
-    newPlayer->pipe = open(msg.pipePath, O_RDONLY);
-
+    newPlayer->pipe = open(msg.pipePath, O_WRONLY);
     if (newPlayer->pipe == -1){ //se o pipe do cliente der erro a abrir!
-        fprintf(stderr, "\nERRO ao abrir o pipe com o cliente %s\n", newPlayer->username);
-        return false;
-        // opcionalmente, enviar um sinal ao cliente para informar da impossibilidade
+        fprintf(stderr, "\nERRO ao abrir o pipe com o cliente %s\n", msg.username);
+        kill(msg.pid, SIGTERM);
+        return;
     }
 
-    // TODO send confirmation message to player
+    // Send confirmation message to player
+    int success = SignUpSuccessful;
+    if( write(newPlayer->pipe, &success, sizeof(int)) != sizeof(int) ){
+        fprintf(stderr, "\nERRO ao enviar mensagem de sucesso ao cliente %s.\n", msg.username);
+        kill(msg.pid, SIGTERM);
+        return;
+    }
 
-    printf("\nO utilizador '%s' inscreveu-se no jogo.\n", newPlayer->username);
-    return true;
+    // Save user details
+    strcpy(newPlayer->username, msg.username);
+    newPlayer->pid = msg.pid;
+
+    printf("\nO utilizador '%s' inscreveu-se no jogo.", newPlayer->username);
+
+    game->nPlayers++;
 }
 
 

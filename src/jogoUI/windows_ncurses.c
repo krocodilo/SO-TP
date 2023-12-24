@@ -142,14 +142,14 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
     ///////////////////////////////////////
 
 
-    for (int i = 0; i < MAP_LINES; i++) {
-        if (map.cmap[i][0] != '\0') {
-            // Mostra a linha com espaçamento duplo na largura
-            for (int j = 0; j < strlen(map.cmap[i]); j++) {
-                mvwprintw(mapawin, i + 1, j * SPACING_FACTOR + 1, "%c", map.cmap[i][j]);
-            }
-        }
-    }
+//    for (int i = 0; i < MAP_LINES; i++) {
+//        if (map.cmap[i][0] != '\0') {
+//            // Mostra a linha com espaçamento duplo na largura
+//            for (int j = 0; j < strlen(map.cmap[i]); j++) {
+//                mvwprintw(mapawin, i + 1, j * SPACING_FACTOR + 1, "%c", map.cmap[i][j]);
+//            }
+//        }
+//    }
 
     ////////////////////////////////////////
     wattroff(mapawin,COLOR_PAIR(1));

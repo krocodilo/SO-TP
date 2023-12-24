@@ -1,39 +1,27 @@
 #include "windows_ncurses.h"
 
-SignUpMessage signUp;
 
-void terminate(int signum){
-    unlink(signUp.pipePath);
+SignUpMessage userInfo;
+Map map;
+
+
+void terminate(int exitcode){
+    printf("\nTerminating...\n");
+
+    unlink(userInfo.pipePath);
+    fflush(stdout);
+    exit(exitcode);
 }
 
-int getNextMessageType(int pipe_fd){
-    int msgType = -1;
 
-    if (read(pipe_fd, &msgType, sizeof(int)) != sizeof(int) ){
-        perror("\nERRO: foi recebida uma mensagem incompleta.\n");
-        return -1;
-    }
-    return msgType;
-}
+//Função para verificar se há colisão na próxima posição
+bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
+    // Ajusta as coordenadas do jogador para corresponder ao mapeamento no mapa
+    int playerMapY = nextY - 1;
+    int playerMapX = nextX / 2;
 
-bool getMessage(int pipe_fd, void* buffer, int size){
-    if (read(pipe_fd, buffer, size) != sizeof(int) ){
-        perror("\nERRO: foi recebida uma mensagem incompleta.\n");
-        return false;
-    }
-    return true;
-}
-
-void run(int myPipe){
-
-    int msgType = getNextMessageType(myPipe);
-    if(msgType == -1)
-        return;
-
-    Map map;
-
-    if( getMessage(myPipe, &map, sizeof(Map)) == false)
-        return;
+    // Verifica se a próxima posição contém 'X' (obstáculo)
+    return mapa[playerMapY][playerMapX] == 'X';
 }
 
 // Função para inicializar o personagem
@@ -161,45 +149,54 @@ int main(int argc, char *argv[]) {
 
     if (argc < 2) {
         perror("Nome do jogador como argumento.\n");
-        return 1;
+        return EXIT_FAILURE;
     }
     if(strlen(argv[1]) > MAX_PLAYER_NAME){
         fprintf(stderr, "Nome do jogador e demasiado longo. Maximo de %d caracteres.", MAX_PLAYER_NAME);
-        return 1;
+        return EXIT_FAILURE;
     }
 
-    strncpy(signUp.username, argv[1], MAX_PLAYER_NAME);
-    strcpy(signUp.pipePath, PIPE_DIRECTORY);
-    strcat(signUp.pipePath, signUp.username);
+    strncpy(userInfo.username, argv[1], MAX_PLAYER_NAME);
+    strcpy(userInfo.pipePath, PIPE_DIRECTORY);
+    strcat(userInfo.pipePath, userInfo.username);
 
-    // Create and open general pipe
-    int myPipe = create_and_open(signUp.pipePath, O_RDWR);
+    // Create and open my pipe
+    int myPipe = create_and_open(userInfo.pipePath, O_RDWR);
     if (myPipe == -1){
         perror("\nERRO: nao foi possivel abrir o pipe deste cliente.\n");
-        return -1;
+        terminate(EXIT_FAILURE);
     } else if (myPipe == -2) {
         printf("\nJa existe um utilizador com este username.\n");
-        return -1;
+        return EXIT_FAILURE;
     } else if (myPipe == -3) {
         perror("\nERRO: falha ao criar o pipe deste cliente.\n");
-        return -1;
+        return EXIT_FAILURE;
     }
 
+    // Open Motor's pipe
     int generalPipe = open(GENERAL_PIPE, O_WRONLY);
     if (generalPipe == -1){
         perror("\nERRO ao tentar abrir o pipe geral.\n");
-        return -1;
+        terminate(EXIT_FAILURE);
     }
 
-    write(generalPipe, &signUp, sizeof(signUp));
+    userInfo.pid = getpid();
+
+    // Enviar inscrição para o motor
+    if( ! writeMessage(generalPipe, SignUp, &userInfo, sizeof(userInfo)) ){
+        perror("\nErro ao enviar mensagem de inscricao para o motor.");
+        terminate(EXIT_FAILURE);
+    }
+    printf("\nFoi enviada mensagem de inscricao.");
+
+    int type = readNextMessageType(myPipe);
+    if( type != SignUpSuccessful ) {
+        fprintf(stderr, "\nERRO, esperava receber mensagem de sucesso. Recebu mensagem #%d", type);
+        terminate(EXIT_FAILURE);
+    }
 
 
-    printf("waiting");
-
-    sleep(1000000);
-
-    close(myPipe);
-    close(generalPipe);
+    sleep(100000);
 
     ////////////////////////////////////////////
 
@@ -213,6 +210,8 @@ int main(int argc, char *argv[]) {
     //getch();
     endwin();
 
+    close(myPipe);
+    close(generalPipe);
     return 0;
 }
 

@@ -9,14 +9,15 @@ all: motor jogoUI jogoUI2
 motor: bot utils.o $(motor_dir)/* $(common_dir)/*
 	gcc -c $(motor_dir)/motor_init.c -o motor_init.o
 	gcc -c $(motor_dir)/motor_signup.c -o motor_signup.o
-	gcc -pthread -o motor $(motor_dir)/motor.c utils.o motor_init.o motor_signup.o
+	gcc -c $(motor_dir)/motor_game.c -o motor_game.o -pthread
+	gcc -pthread -o motor $(motor_dir)/motor.c utils.o motor_init.o motor_signup.o motor_game.o
 
 bot: $(bot_dir)/*
 	gcc $(bot_dir)/bot.c -o bot
 
-jogoUI: $(jogoUI_dir)/* $(common_dir)/* 
+jogoUI: utils.o $(jogoUI_dir)/* $(common_dir)/*
 	gcc -c $(jogoUI_dir)/windows_ncurses.c -o windows_ncurses.o -lncurses
-	gcc -o jogoUI $(jogoUI_dir)/jogoUI.c windows_ncurses.o -lncurses
+	gcc -o jogoUI $(jogoUI_dir)/jogoUI.c utils.o windows_ncurses.o -lncurses
 
 utils.o: $(common_dir)/utils.c $(common_dir)/utils.h
 	gcc -c $(common_dir)/utils.c -o utils.o

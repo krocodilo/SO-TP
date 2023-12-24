@@ -18,6 +18,8 @@ int readNextMessageType(int pipe_fd);
 bool readNextMessage(int pipe_fd, void* buffer, int size);
 bool writeMessage(int pipe_fd, int msgType, void* message, int size);
 
+int selectPipe(fd_set * selectHandler, int pipes[], int numPipes, struct timeval * waitTime);
+int pipeIsSet(int pipeFd, fd_set * selectHandler);
 
 
 #endif //SO_TP_UTILS_H

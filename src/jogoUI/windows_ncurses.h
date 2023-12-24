@@ -16,17 +16,15 @@
 #include <fcntl.h>
 #include <signal.h>
 
-#include "../motor/data_structs.h"
-#include "../common/utils.h"
+#include "../common/common_data_structs.h"
 #include "../common/constants.h"
 #include "../common/messages.h"
+#include "../common/utils.h"
 
 
-#define MAX_COMMAND_LENGTH 50
-#define MAX_ACTIVE_PLAYERS 5
 #define SPACING_FACTOR 2
 
-//menu inicial
+// Menu inicial
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 3
 
@@ -47,14 +45,6 @@ void drawCharacter(WINDOW *win, Character character);
 void clearCharacter(WINDOW *win, Character character);
 void moveCharacter(WINDOW *win, Character *character, int dx, int dy);
 void destroyCharacter(Character *character);
-
-void terminate(int signum);
-int getNextMessageType(int pipe_fd);
-bool getMessage(int pipe_fd, void* buffer, int size);
-void run(int myPipe);
-
-Character initCharacter(int x, int y, char symbol);
-int isLinhaEmBranco(const char *linha);
 
 
 //int validatePlayerName(Player activePlayers[], int numActivePlayers, char *name);

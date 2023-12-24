@@ -13,28 +13,12 @@
 
 SignUpMessage signUp;
 
-void terminate(int signum){
+void terminate(int exitcode){
     unlink(signUp.pipePath);
     printf("\nTerminate");
     fflush(stdout);
+    exit(exitcode);
 }
-
-
-
-//void run(int myPipe) {
-
-//    int msgType = getNextMessageType(myPipe);
-//    if(msgType == -1)
-//        return;
-//
-//    Map map;
-//
-//    if( getMessage(myPipe, &map, sizeof(Map)) == false)
-//        return;
-//
-
-//}
-
 
 
 int main(int argc, char *argv[]) {
@@ -82,20 +66,11 @@ int main(int argc, char *argv[]) {
         terminate(EXIT_FAILURE);
     }
 
-//    int msgType = SignUp;
-//    if( write(generalPipe, &msgType, sizeof(int)) != sizeof(int) )
-//        return EXIT_FAILURE;
-    printf("\nhere");
+    printf("\nFoi enviada mensagem de inscricao.\n");
 
-//    if( write(generalPipe, &signUp, sizeof(signUp)) != sizeof(signUp) )
-//        return EXIT_FAILURE;
-    printf("\nFoi enviada mensagem de inscricao.");
-
-//    fflush(stdout);
 
     fd_set read_fds;
     while(1){
-        printf("\nwaiting...\n");
         FD_ZERO(&read_fds);         //inicializa a watchlist
         FD_SET(myPipe, &read_fds);   // add myPipe ao conjunto watchlist
         FD_SET(0, &read_fds);       //stdin
@@ -103,10 +78,11 @@ int main(int argc, char *argv[]) {
                 myPipe + 1,  // este fd é o maior de todos os fds
                 &read_fds, NULL, NULL, NULL
         );
-        if( ! FD_ISSET(myPipe, &read_fds))
+        if( FD_ISSET(0, &read_fds) )
+            break;
+        if( ! FD_ISSET(myPipe, &read_fds) )
             continue;
 
-        printf("\nbefore reading.");
         switch (readNextMessageType(myPipe)) {
             case NewLevel: {
                 NewLevelMessage msg;
@@ -117,11 +93,14 @@ int main(int argc, char *argv[]) {
                 for(int i = 0; i < MAP_LINES; i++){
                     printf("%s\n", msg.map.cmap[i]);
                 }
+                break;
             }
+            case SignUpSuccessful:
+                printf("\nSuccess.\n");
+                break;
             default:
                 perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
         }
-        fflush(stdout);
     }
 
 //    sleep(1000000);

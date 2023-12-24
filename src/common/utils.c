@@ -58,3 +58,31 @@ bool writeMessage(int pipe_fd, int msgType, void* message, int size) {
         return false;
     return true;
 }
+
+
+int selectPipe(fd_set * selectHandler, int pipes[], int numPipes, struct timeval * waitTime) {
+    /*
+     * Wrapper function for select()
+     */
+
+    int highestPipeFD = 0;
+
+    FD_ZERO(selectHandler);
+
+    for(int i = 0; i < numPipes; i++) {
+        FD_SET(pipes[i], selectHandler);
+        if(pipes[i] > highestPipeFD)
+            highestPipeFD = pipes[i];
+    }
+
+    return select(
+            highestPipeFD + 1,  // este fd é o maior de todos os fds
+            selectHandler, NULL, NULL,
+            waitTime               // cada uso do select decrementa o waitTime. Pode ser NULL
+    );
+}
+
+
+int pipeIsSet(int pipeFd, fd_set * selectHandler) {
+    return FD_ISSET(pipeFd, selectHandler);
+}
