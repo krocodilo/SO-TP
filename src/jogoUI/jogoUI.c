@@ -2,7 +2,7 @@
 
 
 SignUpMessage userInfo;
-Map map;
+Map maps;
 
 
 void terminate(int exitcode){
@@ -69,33 +69,33 @@ void controloTeclas() {
         switch (ch) {
             case KEY_UP:
                 
-                if (!verificaColisao(map.cmap, player.y - 1, player.x) &&
-                ((player.y-1) > 1) && 
-                ((player.x) > 1) && 
-                ((player.y-1) < 16) && 
-                ((player.x) < 79))
+                if (!verificaColisao(maps.cmap, player.y - 1, player.x) &&
+                    ((player.y-1) > 1) &&
+                    ((player.x) > 1) &&
+                    ((player.y-1) < 16) &&
+                    ((player.x) < 79))
                 {          	   
                     (player.y)--;
                     mostraMapa(mapawin, 18, 81, &player);
                 }
                 break;
 	    case KEY_DOWN:
-		if (!verificaColisao(map.cmap, player.y + 1, player.x) &&
-		((player.y+1) > 1) && 
-                ((player.x) > 1) && 
-                ((player.y+1) < 16) && 
-                ((player.x) < 79)) 
+		if (!verificaColisao(maps.cmap, player.y + 1, player.x) &&
+            ((player.y+1) > 1) &&
+            ((player.x) > 1) &&
+            ((player.y+1) < 16) &&
+            ((player.x) < 79))
                 {
 		    (player.y)++;
 		    mostraMapa(mapawin, 18, 81, &player);
 		}
 		break;
 	    case KEY_LEFT:
-		if (!verificaColisao(map.cmap, player.y, player.x - 2) &&
-		((player.y) > 1)&& 
-                ((player.x-2) > 1) && 
-                ((player.y) < 16) && 
-                ((player.x-2) < 79))
+		if (!verificaColisao(maps.cmap, player.y, player.x - 2) &&
+            ((player.y) > 1) &&
+            ((player.x-2) > 1) &&
+            ((player.y) < 16) &&
+            ((player.x-2) < 79))
 		{
 		    (player.x)--;
 		    (player.x)--;
@@ -103,11 +103,11 @@ void controloTeclas() {
 		}
 		break;
 	    case KEY_RIGHT:
-		if (!verificaColisao(map.cmap, player.y, player.x + 1) &&
-		((player.y) > 1)&& 
-                ((player.x+2) > 1) && 
-                ((player.y) < 16) && 
-                ((player.x+2) < 79))
+		if (!verificaColisao(maps.cmap, player.y, player.x + 1) &&
+            ((player.y) > 1) &&
+            ((player.x+2) > 1) &&
+            ((player.y) < 16) &&
+            ((player.x+2) < 79))
                 {
 		    (player.x)++;
 		    (player.x)++;

@@ -9,10 +9,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <string.h>
 
 #include "data_structs.h"
 
 void resetGame(Game* game);
 int readEnvironmentVariables(GameSettings* gs);
+int readMapFiles(Map maps[]);
 
 #endif

@@ -10,7 +10,7 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
     /*
      * Wait for enough players to sign up
      */
-    int hasTimedOut = false;
+    bool hasTimedOut = false;
     game->nPlayers = 0;
 
     // To be used with select()

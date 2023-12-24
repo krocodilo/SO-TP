@@ -66,24 +66,53 @@ int readEnvironmentVariables(GameSettings* gs){
 }
 
 
-
-
-// Função para inicializar o personagem
-Character initCharacter(int x, int y, char symbol) {
-    Character character;
-    character.x = x;
-    character.y = y;
-    character.symbol = symbol;
-    return character;
+bool isLinhaEmBranco(const char *linha) {
+    while (*linha) {
+        if (!isspace(*linha)) {
+            return false;  // A linha não está em branco
+        }
+        linha++;
+    }
+    return true;  // A linha está em branco
 }
 
-// Função para inicializar as coordenadas x e y dos jogadores
-void initializePlayers(Player players[], int numPlayers) {
-    for (int i = 0; i < numPlayers; i++) {
-        // Inicializa as coordenadas x para cada jogador com valores aleatórios entre 3 e 37
-        players[i].info = initCharacter(rand() % (37 - 3 + 1) + 3, 0, 'P'); // 'P' é apenas um exemplo
-        // Define o símbolo como o primeiro caractere no campo username
-        players[i].username[0] = players[i].info.symbol;
-        // Os caracteres restantes no campo username podem ser definidos conforme necessário
+
+
+int readMapFiles(Map maps[]) {
+    char filepath[100], filename[20];
+
+    for(int i = 0; i < MAX_LEVELS; i++){
+
+        snprintf(filename, sizeof(filename), "labN%d.txt", i+1);
+        snprintf(filepath, sizeof(filepath), "./maps/%s", filename);
+
+        FILE *filePointer;
+        filePointer = fopen(filepath, "r");
+
+        if (filePointer == NULL) {
+            fprintf(stderr, "Erro ao abrir o ficheiro %s", filepath);
+            return EXIT_FAILURE;
+        }
+
+        int linhaAtual = 0;
+        char buffer[MAP_COLS + 2];  // +2 para incluir espaço para '\n' e '\0'
+
+        while (linhaAtual < MAP_LINES && fgets(buffer, sizeof(buffer), filePointer) != NULL) {
+            size_t comprimento = strlen(buffer);
+
+            // Remover o caractere de nova linha, se existir
+            if (comprimento > 0 && buffer[comprimento - 1] == '\n') {
+                buffer[comprimento - 1] = '\0';
+            }
+
+            // Verificar se a linha não está em branco
+            if (!isLinhaEmBranco(buffer)) {
+                strncpy(maps[i].cmap[linhaAtual], buffer, MAP_COLS);
+                linhaAtual++;
+            }
+        }
+
+        fclose(filePointer);
     }
+    return EXIT_SUCCESS;
 }

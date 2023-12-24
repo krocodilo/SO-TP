@@ -1,4 +1,3 @@
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -8,6 +7,7 @@
 #include <signal.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 #include <pthread.h>
 
 #include "../common/constants.h"
@@ -18,9 +18,7 @@
 
 
 Game* game;
-
-Map map[MAX_LEVELS];
-
+Map maps[MAX_LEVELS];
 
 
 void terminate(int exitcode){
@@ -45,75 +43,6 @@ void terminate(int exitcode){
     fflush(stdout);
     exit(exitcode);
 }
-
-
-
-
-
-
-bool isLinhaEmBranco(const char *linha) {
-    while (*linha) {
-        if (!isspace(*linha)) {
-            return false;  // A linha não está em branco
-        }
-        linha++;
-    }
-    return true;  // A linha está em branco
-}
-
-int lerMapas() {
-    char filepath[100], filename[20];
-
-//    switch (game->currentLevel) {
-//        case 1: snprintf(filepath, sizeof(filepath), "./maps/%s", "labN1.txt");
-//            break;
-//        case 2: snprintf(filepath, sizeof(filepath), "./maps/%s", "labN2.txt");
-//            break;
-//        case 3: snprintf(filepath, sizeof(filepath), "./maps/%s", "labN3.txt");
-//            break;
-//    }
-
-    for(int i = 0; i < MAX_LEVELS; i++){
-
-        snprintf(filename, sizeof(filename), "labN%d.txt", i+1);
-        snprintf(filepath, sizeof(filepath), "./maps/%s", filename);
-
-        FILE *filePointer;
-        filePointer = fopen(filepath, "r");
-
-        if (filePointer == NULL) {
-            fprintf(stderr, "Erro ao abrir o ficheiro %s", filepath);
-            return EXIT_FAILURE;
-        }
-
-        int linhaAtual = 0;
-        char buffer[MAP_COLS + 2];  // +2 para incluir espaço para '\n' e '\0'
-
-        while (linhaAtual < MAP_LINES && fgets(buffer, sizeof(buffer), filePointer) != NULL) {
-            size_t comprimento = strlen(buffer);
-
-            // Remover o caractere de nova linha, se existir
-            if (comprimento > 0 && buffer[comprimento - 1] == '\n') {
-                buffer[comprimento - 1] = '\0';
-            }
-
-            // Verificar se a linha não está em branco
-            if (!isLinhaEmBranco(buffer)) {
-                strncpy(map[i].cmap[linhaAtual], buffer, MAP_COLS);
-                linhaAtual++;
-            }
-        }
-
-        fclose(filePointer);
-    }
-    return EXIT_SUCCESS;
-}
-
-
-
-
-
-
 
 
 
@@ -186,7 +115,7 @@ int main(int argc, char *argv[]) {
     srand((unsigned int)time(NULL));
 
     // Read all maps
-    if( lerMapas() == EXIT_FAILURE)
+    if(readMapFiles(maps) == EXIT_FAILURE )
         return EXIT_FAILURE;
 
     // Initialize Game Structure
@@ -216,10 +145,10 @@ int main(int argc, char *argv[]) {
         terminate(EXIT_FAILURE);
     } else if (game->generalPipe == -2) {
         printf("\nJa existe uma instancia do Motor a executar! So e permitido uma!\n");
-        terminate(EXIT_FAILURE);
+        return EXIT_FAILURE;
     } else if (game->generalPipe == -3) {
         perror("\nERRO: falha ao criar o mecanismo de comunicacao (pipe) geral.\n");
-        terminate(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
 
@@ -235,10 +164,9 @@ int main(int argc, char *argv[]) {
 
         GameThreadArg arg = {
                 .game = game,
-                .maps = map,
+                .maps = maps,
                 .settings = &gameSettings
         };
-
         pthread_t id;
         pthread_create(&id, NULL, gameThread, &arg );
 
