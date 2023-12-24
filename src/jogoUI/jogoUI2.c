@@ -20,9 +20,24 @@ void terminate(int exitcode){
     exit(exitcode);
 }
 
+#include "../motor/motor_init.h"
 
 int main(int argc, char *argv[]) {
 
+    Map maps[MAX_LEVELS];
+
+    readMapFiles(maps);
+
+
+    for (int i = 0; i < MAP_LINES; i++) {
+        printf("\n%s", maps[0].cmap[i]);
+    }
+
+
+
+
+
+    exit(0);
 
     // Register signal handler
     signal(SIGINT, terminate);
@@ -68,39 +83,26 @@ int main(int argc, char *argv[]) {
 
     printf("\nFoi enviada mensagem de inscricao.\n");
 
+    int type = readNextMessageType(myPipe);
+    if( type != SignUpSuccessful ) {
+        fprintf(stderr, "\nERRO, esperava receber mensagem de sucesso. Recebu mensagem #%d", type);
+        terminate(EXIT_FAILURE);
+    }
 
-    fd_set read_fds;
-    while(1){
-        FD_ZERO(&read_fds);         //inicializa a watchlist
-        FD_SET(myPipe, &read_fds);   // add myPipe ao conjunto watchlist
-        FD_SET(0, &read_fds);       //stdin
-        int sval = select(
-                myPipe + 1,  // este fd é o maior de todos os fds
-                &read_fds, NULL, NULL, NULL
-        );
-        if( FD_ISSET(0, &read_fds) )
-            break;
-        if( ! FD_ISSET(myPipe, &read_fds) )
-            continue;
-
-        switch (readNextMessageType(myPipe)) {
-            case NewLevel: {
-                NewLevelMessage msg;
-                if( ! readNextMessage(myPipe, &msg, sizeof(msg)) ){
-                    perror("\nErro ao ler a proxima mensagem no pipe.");
-                    break;
-                }
-                for(int i = 0; i < MAP_LINES; i++){
-                    printf("%s\n", msg.map.cmap[i]);
-                }
+    switch (readNextMessageType(myPipe)) {
+        case NewLevel: {
+            NewLevelMessage msg;
+            if( ! readNextMessage(myPipe, &msg, sizeof(msg)) ){
+                perror("\nErro ao ler a proxima mensagem no pipe.");
                 break;
             }
-            case SignUpSuccessful:
-                printf("\nSuccess.\n");
-                break;
-            default:
-                perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
+            for(int i = 0; i < MAP_LINES; i++){
+                printf("%s\n", msg.map.cmap[i]);
+            }
+            break;
         }
+        default:
+            perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
     }
 
 //    sleep(1000000);

@@ -32,6 +32,6 @@ clean_objects:
 
 
 
-
 jogoUI2: utils.o $(jogoUI_dir)/* $(common_dir)/*
-	gcc $(jogoUI_dir)/jogoUI2.c utils.o -o jogoUI2
+	gcc -c $(motor_dir)/motor_init.c -o motor_init.o
+	gcc $(jogoUI_dir)/jogoUI2.c utils.o motor_init.o -o jogoUI2
