@@ -151,6 +151,9 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map m
         }
     }
 
+
+    ///////////////////////////////////////
+
     wattroff(mapawin,COLOR_PAIR(1));
 
 
@@ -433,8 +436,7 @@ WINDOW* processCommand(char *command,WINDOW * comando) {
         ////////////////////////////////////////////////////77
     else
     if (strcmp(command, "exit") == 0) {
-        // TODO: avisar motor e sair ordeiramente
-        endwin();
+
 
         exit(0);
     }

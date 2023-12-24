@@ -84,7 +84,7 @@ int readMapFiles(Map maps[]) {
     for(int i = 0; i < MAX_LEVELS; i++){
 
         snprintf(filename, sizeof(filename), "labN%d.txt", i+1);
-        snprintf(filepath, sizeof(filepath), "./map/%s", filename);
+        snprintf(filepath, sizeof(filepath), "./maps/%s", filename);
 
         FILE *filePointer;
         filePointer = fopen(filepath, "r");

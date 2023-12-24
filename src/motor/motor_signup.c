@@ -108,12 +108,12 @@ void receiveNewPlayer(Game* game){
     game->nPlayers++;
 }
 
-
+//imprimir lista de comandos
 void printCommandInstructions() {
     // start, players, exit
 }
 
-
+//ler lista de comandos
 int readSignupCommands(Game* game) {
     // todo
     // start -> existe numero minimo de players (2)?

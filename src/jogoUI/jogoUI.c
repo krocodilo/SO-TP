@@ -9,6 +9,7 @@ void terminate(int exitcode){
     printf("\nTerminating...\n");
 
     unlink(userInfo.pipePath);
+    endwin();
     fflush(stdout);
     exit(exitcode);
 }
