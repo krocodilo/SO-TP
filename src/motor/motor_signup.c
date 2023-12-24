@@ -120,9 +120,9 @@ void printCommandInstructions() {
 
 //ler lista de comandos
 int readSignupCommands(Game* game) {
-
+    char command[MAX_COMMAND_LENGTH];
     while (1) {
-        printf("Comando: ");
+        printf("\n\nComando: ");
         if (fgets(command, sizeof(command), stdin) == NULL) {
             fprintf(stderr, "Erro ao ler o comando.\n");
             return EXIT_FAILURE;
@@ -145,7 +145,7 @@ int readSignupCommands(Game* game) {
         } else if (strcmp(command, "players") == 0) {
             // Exibir informações dos jogadores
             for (int i = 0; i < game->nPlayers; i++) {
-                printf("Jogador %d: %s\n", i + 1, game->players[i].name);
+                printf("Jogador %d: %s\n", i + 1, game->players[i].username);
             }
             return -1;
         } else if (strcmp(command, "exit") == 0) {
@@ -156,7 +156,6 @@ int readSignupCommands(Game* game) {
             printf("Comando não reconhecido. Tente novamente.\n");
         }
     }
-    return EXIT_SUCCESS;
 }
 
 bool keepWaiting() {

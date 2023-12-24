@@ -21,7 +21,6 @@
 #include "../common/messages.h"
 #include "../common/utils.h"
 
-
 #define SPACING_FACTOR 2
 
 // Menu inicial
@@ -49,6 +48,7 @@ void destroyCharacter(Character *character);
 
 //int validatePlayerName(Player activePlayers[], int numActivePlayers, char *name);
 //void listBots(Game *game);
+
 
 
 #endif //SO_TP_WINDOWS_NCURSES_H
