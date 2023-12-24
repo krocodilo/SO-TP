@@ -189,6 +189,8 @@ int main(int argc, char *argv[]) {
     }
     printf("\nFoi enviada mensagem de inscricao.");
 
+
+
     int type = readNextMessageType(myPipe);
     if( type != SignUpSuccessful ) {
         fprintf(stderr, "\nERRO, esperava receber mensagem de sucesso. Recebu mensagem #%d", type);
@@ -199,12 +201,10 @@ int main(int argc, char *argv[]) {
     sleep(100000);
 
     ////////////////////////////////////////////
+    //menu de jogo
+    //runMenuLogic();
 
-    runMenuLogic();
-    	
     flushinp();
-    
-    
     controloTeclas();
     
     //getch();

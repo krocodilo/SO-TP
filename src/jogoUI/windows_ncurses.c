@@ -151,7 +151,21 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
 //        }
 //    }
 
+
+
+
+
+
+
+
+
     ////////////////////////////////////////
+
+
+
+
+
+
     wattroff(mapawin,COLOR_PAIR(1));
 
 
