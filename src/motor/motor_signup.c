@@ -111,16 +111,53 @@ void receiveNewPlayer(Game* game){
 //imprimir lista de comandos
 void printCommandInstructions() {
     // start, players, exit
+    printf("\nComandos disponíveis:\n");
+    printf("- start   : Iniciar o jogo\n");
+    printf("- players : Exibir informações dos jogadores\n");
+    printf("- msg <nome_utilizador> <mensagem> : Enviar mensagem a outro jogador\n");
+    printf("- exit    : Sair do jogo\n");
 }
 
 //ler lista de comandos
 int readSignupCommands(Game* game) {
-    // todo
-    // start -> existe numero minimo de players (2)?
-    printf("\nreading cmd\n");
+
+    while (1) {
+        printf("Comando: ");
+        if (fgets(command, sizeof(command), stdin) == NULL) {
+            fprintf(stderr, "Erro ao ler o comando.\n");
+            return EXIT_FAILURE;
+        }
+
+        // Remover a nova linha do final do comando
+        size_t command_length = strlen(command);
+        if (command_length > 0 && command[command_length - 1] == '\n') {
+            command[command_length - 1] = '\0';
+        }
+
+        if (strcmp(command, "start") == 0) {
+            // Verificar condições para iniciar o jogo
+            if (game->nPlayers >= 2) {
+                printf("Iniciando o jogo...\n");
+                return EXIT_SUCCESS;
+            } else {
+                printf("Número insuficiente de jogadores para iniciar o jogo. Pelo menos 2 jogadores são necessários.\n");
+            }
+        } else if (strcmp(command, "players") == 0) {
+            // Exibir informações dos jogadores
+            for (int i = 0; i < game->nPlayers; i++) {
+                printf("Jogador %d: %s\n", i + 1, game->players[i].name);
+            }
+            return -1;
+        } else if (strcmp(command, "exit") == 0) {
+            // Sair do jogo
+            printf("Saindo do jogo...\n");
+            return EXIT_FAILURE;
+        } else {
+            printf("Comando não reconhecido. Tente novamente.\n");
+        }
+    }
     return EXIT_SUCCESS;
 }
-
 
 bool keepWaiting() {
     printf("\nO periodo de inscricoes terminou, sem o minimo de jogadores. Pretende "
