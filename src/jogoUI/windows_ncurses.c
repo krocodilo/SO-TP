@@ -121,7 +121,7 @@ void destroy_win(WINDOW *local_win){
 }
 
 //mostra mapa
-void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
+void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map) {
     echo();
     int yMax, xMax,a;
     getmaxyx(stdscr, yMax, xMax);
@@ -142,29 +142,14 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
     ///////////////////////////////////////
 
 
-//    for (int i = 0; i < MAP_LINES; i++) {
-//        if (map.cmap[i][0] != '\0') {
-//            // Mostra a linha com espaçamento duplo na largura
-//            for (int j = 0; j < strlen(map.cmap[i]); j++) {
-//                mvwprintw(mapawin, i + 1, j * SPACING_FACTOR + 1, "%c", map.cmap[i][j]);
-//            }
-//        }
-//    }
-
-
-
-
-
-
-
-
-
-    ////////////////////////////////////////
-
-
-
-
-
+    for (int i = 0; i < MAP_LINES; i++) {
+        if (map.cmap[i][0] != '\0') {
+            // Mostra a linha com espaçamento duplo na largura
+            for (int j = 0; j < strlen(map.cmap[i]); j++) {
+                mvwprintw(mapawin, i + 1, j * SPACING_FACTOR + 1, "%c", map.cmap[i][j]);
+            }
+        }
+    }
 
     wattroff(mapawin,COLOR_PAIR(1));
 
@@ -177,6 +162,7 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player) {
     refresh();
     wrefresh(mapawin);
 }
+
 
 //mostra numero de pedras no mapa numa janela
 void pedras(WINDOW *win, int height, int width) {

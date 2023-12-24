@@ -32,7 +32,7 @@
 int showMenu(char **choices, int n_choices, int *highlight);
 int runMenuLogic();
 void destroy_win(WINDOW *local_win);
-void mostraMapa(WINDOW *mapawin, int height, int width, Character* player);
+void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map);
 void pedras(WINDOW *win, int height, int width);
 void bloqueios(WINDOW *win, int height, int width);
 void nivel(WINDOW *win, int height, int width);

@@ -18,7 +18,7 @@
 
 
 Game* game;
-Map maps[MAX_LEVELS];
+Map map[MAX_LEVELS];
 
 
 void terminate(int exitcode){
@@ -114,8 +114,8 @@ int main(int argc, char *argv[]) {
     // Inicialize o gerador de números aleatórios com uma semente
     srand((unsigned int)time(NULL));
 
-    // Read all maps
-    if(readMapFiles(maps) == EXIT_FAILURE )
+    // Read all map
+    if(readMapFiles(map) == EXIT_FAILURE )
         return EXIT_FAILURE;
 
     // Initialize Game Structure
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 
         GameThreadArg arg = {
                 .game = game,
-                .maps = maps,
+                .maps = map,
                 .settings = &gameSettings
         };
         pthread_t id;
