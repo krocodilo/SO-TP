@@ -9,17 +9,19 @@ enum MessageTypes {
     // Sent by motor:
     SignUpSuccessful,   // Sends no additional message
     NewLevel,
-    ModifyMap,
+    Move,
+//    ModifyMap,
     PlayersList,
     Terminate,          // Sends GenericMessage
 
 
     // Sent by jogoUI:
     SignUp,
-    Move,
+    MoveRequest,
     GetPlayersList,     // Sends no additional message
     LeaveGame,          // Sends no additional message
-    TextMsg
+
+    TextMsg             // Sent directly to other players
 };
 
 
@@ -36,9 +38,10 @@ typedef struct {
 } NewLevelMessage;
 
 typedef struct {
-    int x, y;
-    char newChar;
-} ModifyMapMessage;
+    Position from;
+    Position to;
+    char symbol;
+} MoveMessage;
 
 typedef struct {
     char players[MAX_PLAYERS][MAX_PLAYER_NAME];
@@ -56,8 +59,8 @@ typedef struct {
 
 typedef struct {
     int pid;
-    int x, y;
-} MoveMessage;
+    Position pos;
+} MoveRequestMessage;
 
 typedef struct {
     char from[MAX_PLAYER_NAME];

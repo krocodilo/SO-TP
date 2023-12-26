@@ -10,11 +10,16 @@ typedef struct {
 } Map;
 
 
-typedef struct{
+typedef struct {
     int x;
     int y;
     char symbol;
 } Character;
+
+typedef struct {
+    int x;
+    int y;
+} Position;
 
 
 #endif //SO_TP_COMMON_DATA_STRUCTS_H
