@@ -45,6 +45,7 @@ typedef struct {
 
 typedef struct {
     char players[MAX_PLAYERS][MAX_PLAYER_NAME];
+    int nPlayers;
 } PlayersListMessage;
 
 
