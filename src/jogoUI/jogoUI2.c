@@ -19,25 +19,22 @@ void terminate(int exitcode){
     fflush(stdout);
     exit(exitcode);
 }
-
-#include "../motor/motor_init.h"
+//
+//#include "../motor/motor_init.h"
 
 int main(int argc, char *argv[]) {
 
-    Map maps[MAX_LEVELS];
+//    Map maps[MAX_LEVELS];
+//
+//    readMapFiles(maps);
+//
+//
+//    for (int i = 0; i < MAP_LINES; i++) {
+//        printf("\n%s", maps[0].cmap[i]);
+//    }
 
-    readMapFiles(maps);
+//    exit(0);
 
-
-    for (int i = 0; i < MAP_LINES; i++) {
-        printf("\n%s", maps[0].cmap[i]);
-    }
-
-
-
-
-
-    exit(0);
 
     // Register signal handler
     signal(SIGINT, terminate);

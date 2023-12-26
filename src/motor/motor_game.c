@@ -44,17 +44,16 @@ void* gameThread(void* arg) {
     game->currentLevel = 1;
     while(game->currentLevel <= MAX_LEVELS ) {
         printf("Iniciou o nivel %d", game->currentLevel);
-        fflush(stdout);
 
         NewLevelMessage newMap = {game->currentLevel};
-        memcpy(&newMap, &maps[game->currentLevel-1], sizeof(Map));
+        copyMap(&newMap.map, &maps[game->currentLevel-1]);
 
         for(int i = 0; i < game->nPlayers; i++)
             if( ! writeMessage(game->players[i].pipe, NewLevel, &newMap, sizeof(newMap)) ){
                 fprintf(stderr, "Erro ao enviar mapa para %s.", game->players[i].username);
             }
 
-        sleep(1000000000);
+        sleep(100000000);
         game->currentLevel++;
     }
     return NULL;

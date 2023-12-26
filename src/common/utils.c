@@ -86,3 +86,10 @@ int selectPipe(fd_set * selectHandler, int pipes[], int numPipes, struct timeval
 int pipeIsSet(int pipeFd, fd_set * selectHandler) {
     return FD_ISSET(pipeFd, selectHandler);
 }
+
+
+void copyMap(Map * to, Map * from) {
+    for(int l = 0; l < MAP_LINES; l++)
+        for(int c = 0; c < MAP_COLS; c++)
+            to->cmap[l][c] = from->cmap[l][c];
+}

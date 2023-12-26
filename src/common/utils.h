@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "common_data_structs.h"
 
 
 int create_and_open(char* pipename, int flags);
@@ -20,6 +21,8 @@ bool writeMessage(int pipe_fd, int msgType, void* message, int size);
 
 int selectPipe(fd_set * selectHandler, int pipes[], int numPipes, struct timeval * waitTime);
 int pipeIsSet(int pipeFd, fd_set * selectHandler);
+
+void copyMap(Map * to, Map * from);
 
 
 #endif //SO_TP_UTILS_H

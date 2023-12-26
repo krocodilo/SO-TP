@@ -134,13 +134,6 @@ void controloTeclas() {
 
 int main(int argc, char *argv[]) {
 
-    printf("\e[8;28;83t");
-
-    initscr();
-    noecho();
-    keypad(stdscr, TRUE);
-    
-    ////////////////////////////////////////////
 
     // Register signal handler
     signal(SIGINT, terminate);
@@ -188,7 +181,7 @@ int main(int argc, char *argv[]) {
         terminate(EXIT_FAILURE);
     }
     printf("\nFoi enviada mensagem de inscricao.");
-
+    fflush(stdout);
 
 
     int type = readNextMessageType(myPipe);
@@ -204,14 +197,24 @@ int main(int argc, char *argv[]) {
                 perror("\nErro ao ler a proxima mensagem no pipe.");
                 break;
             }
-            memcpy(&map, &msg.map, sizeof(Map));
+//            memcpy(&map, &msg.map, sizeof(Map));
+            copyMap(&map, &msg.map);
             break;
         }
         default:
             perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
+            terminate(1);
     }
 
     ////////////////////////////////////////////
+
+    printf("\e[8;28;83t");
+
+    initscr();
+    noecho();
+    keypad(stdscr, TRUE);
+
+
     //menu de jogo
     //runMenuLogic();
 
@@ -223,6 +226,7 @@ int main(int argc, char *argv[]) {
 
     close(myPipe);
     close(generalPipe);
+    terminate(EXIT_SUCCESS);
     return 0;
 }
 

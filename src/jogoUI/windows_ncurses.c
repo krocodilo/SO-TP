@@ -437,7 +437,7 @@ WINDOW* processCommand(char *command,WINDOW * comando) {
     else
     if (strcmp(command, "exit") == 0) {
 
-
+        endwin();
         exit(0);
     }
 
