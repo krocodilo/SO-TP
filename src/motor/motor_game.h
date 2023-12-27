@@ -18,6 +18,7 @@
 #include "../common/messages.h"
 #include "../common/utils.h"
 #include "data_structs.h"
+#include "motor_backend.h"
 
 
 
@@ -25,9 +26,10 @@ void* gameThread(void* arg);
 
 
 typedef struct {
-    Game* game;
-    Map* maps;
-    GameSettings* settings;
+    Game * game;
+    Map * maps;
+    GameSettings * settings;
+    Mutexes * mutexes;
 } GameThreadArg;
 
 

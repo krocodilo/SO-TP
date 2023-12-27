@@ -10,7 +10,7 @@ enum MessageTypes {
     SignUpSuccessful,   // Sends no additional message
     NewLevel,
     Move,
-//    ModifyMap,
+    ModifyMap,
     PlayersList,
     Terminate,          // Sends GenericMessage
 
@@ -38,10 +38,15 @@ typedef struct {
 } NewLevelMessage;
 
 typedef struct {
-    Position from;
+    Position from;      // This position is to be freed
     Position to;
     char symbol;
 } MoveMessage;
+
+typedef struct {
+    Position pos;
+    char symbol;
+} ModifyMapMessage;
 
 typedef struct {
     char players[MAX_PLAYERS][MAX_PLAYER_NAME];

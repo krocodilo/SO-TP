@@ -2,13 +2,19 @@
 #define SO_TP_CONSTANTS_H
 
 
+// UI Symbols
+#define FREE_SPACE ' '
+#define CHAR_WALLS      'X'
+#define CHAR_ROCK       'P'
+#define CHAR_MBLOCKS    'B'
+
 
 // Game Limits constants
 #define MAX_PLAYERS     5
 #define MAX_BOTS        10
-#define MAX_PEDRAS      50  // maximo de pedras presentes no mapa em simultaneo
+#define MAX_ROCKS       50  // maximo de pedras presentes no mapa em simultaneo
 #define MAX_LEVELS      3
-#define MAX_BLOQ_MOVEIS 5   // maximo bloqueios moveis
+#define MAX_MBLOCKS     5   // maximo bloqueios moveis
 
 
 // Map size
@@ -25,7 +31,6 @@
 
 // Additional Constants
 #define MAX_PLAYER_NAME 30
-#define MAX_BOT_NAME 30
 #define MAX_COMMAND_LENGTH 50
 
 

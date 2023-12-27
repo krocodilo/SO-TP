@@ -15,6 +15,7 @@
 #include "motor_init.h"
 #include "motor_signup.h"
 #include "motor_game.h"
+#include "motor_bots.h"
 
 
 Game* game;
@@ -111,6 +112,7 @@ int processAdminCommand(char *adminCommand, GameSettings *gameSettings) {
 int main(int argc, char *argv[]) {
     GameSettings gameSettings;
 
+
     // Inicialize o gerador de números aleatórios com uma semente
     srand((unsigned int)time(NULL));
 
@@ -125,6 +127,10 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     resetGame(game);
+
+
+    runBots(game);
+    exit(0);
 
 
     // Read Environment Variables
@@ -151,28 +157,34 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    // create mutexes
+    Mutexes mutexes;
+    pthread_mutex_init(&mutexes.currentMap, NULL);
+    pthread_mutex_init(&mutexes.players, NULL);
 
     while(true){
-        printf("\n\nA iniciar novo jogo!\n");
-
         if( waitForClientsSignUp(gameSettings, game) == EXIT_FAILURE) {
             terminate(EXIT_FAILURE);
         }
 
-        // Inicialize as coordenadas x e y para todos os jogadores
-//        initializePlayerCoordinates(game.players, game->nPlayers);
+        // Make sure mutexes are unlocked
+        pthread_mutex_unlock(&mutexes.currentMap);
+        pthread_mutex_unlock(&mutexes.players);
 
+        // Start game thread
         GameThreadArg arg = {
                 .game = game,
                 .maps = map,
-                .settings = &gameSettings
+                .settings = &gameSettings,
+                .mutexes = &mutexes
         };
         pthread_t id;
         pthread_create(&id, NULL, gameThread, &arg );
 
-        // read commands
+        // read commands thread
 
         pthread_join(id, NULL);
+        printf("\n\nA iniciar nova ronda!\n");
     }
 
 

@@ -33,25 +33,40 @@ bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
     return mapa[playerMapY][playerMapX] == 'X';
 }
 
+// Send new map to all players
+void broadcastNewMap(Game * game, Map * currentMap, Mutexes* mutx) {
+    pthread_mutex_lock(&mutx->currentMap);
+
+    NewLevelMessage mapMsg = {game->currentLevel};
+    copyMap(&mapMsg.map, currentMap);
+    broadcastMessageToPlayers(game, NewLevel, &mapMsg, sizeof(mapMsg), &mutx->players);
+
+    pthread_mutex_unlock(&mutx->currentMap);
+}
 
 
 
+// Game Logic
 void* gameThread(void* arg) {
+    // Parse arguments into local pointers
     Game* game = (Game*) ((GameThreadArg*) arg)->game;
     Map* maps = (Map*) ((GameThreadArg*) arg)->maps;
     GameSettings* settings = (GameSettings*) ((GameThreadArg*) arg)->settings;
+    Mutexes* mutx = (Mutexes*) ((GameThreadArg*) arg)->mutexes;
+
+    Map currentMap;
 
     game->currentLevel = 1;
     while(game->currentLevel <= MAX_LEVELS ) {
+        copyMap(&currentMap, &maps[game->currentLevel-1]);  // create a copy of this level's map, to then be modified
         printf("Iniciou o nivel %d", game->currentLevel);
 
-        NewLevelMessage newMap = {game->currentLevel};
-        copyMap(&newMap.map, &maps[game->currentLevel-1]);
+        // Send new map
+        broadcastNewMap(game, &currentMap, mutx);
 
-        for(int i = 0; i < game->nPlayers; i++)
-            if( ! writeMessage(game->players[i].pipe, NewLevel, &newMap, sizeof(newMap)) ){
-                fprintf(stderr, "Erro ao enviar mapa para %s.", game->players[i].username);
-            }
+        // Start bots
+
+
 
         sleep(100000000);
         game->currentLevel++;

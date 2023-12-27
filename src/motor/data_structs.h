@@ -16,9 +16,9 @@ typedef struct {
 
 
 typedef struct {
-    char name[MAX_BOT_NAME];
+    int id, period, duration;
     pid_t pid;
-    int pipe_fd[2];  // Novo campo
+    int pipe;
 } Bot;
 
 typedef struct {
@@ -48,6 +48,10 @@ typedef struct {
 } GameSettings;
 
 
+typedef struct {
+    pthread_mutex_t currentMap;
+    pthread_mutex_t players;
+} Mutexes;
 
 
 

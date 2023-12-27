@@ -15,7 +15,14 @@
 #include <pthread.h>
 
 #include "../common/constants.h"
+#include "../common/messages.h"
+#include "../common/utils.h"
 #include "data_structs.h"
+#include "motor_backend.h"
+
+
+void runBots(Game *game);
+
 
 
 #endif //SO_TP_MOTOR_BOTS_H
