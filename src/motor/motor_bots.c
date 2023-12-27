@@ -2,67 +2,13 @@
 
 
 
-int executeBot(Bot *bot, int period, int duration) {
-    int botPipe[2];
-    if (pipe(botPipe) == -1) {
-        perror("Erro ao criar pipe para bot.\n");
-        return EXIT_FAILURE;
-    }
-
-    pid_t pid = fork();
-
-    if (pid == 0) {
-        // Processo do bot
-        close(botPipe[0]);  // Fecha a extremidade de leitura do pipe no processo do bot
-        close(STDOUT_FILENO);    // Fecha STDOUT default
-
-        // Substitui a imagem do processo do bot com o programa ./bot
-        dup(botPipe[1]);  // Duplica a extremidade de escrita do pipe para STDOUT (posiçao mais baixa disponivel)
-        close(botPipe[1]);  // Fecha a extremidade de escrita do pipe
-
-        execlp("./bot", "./bot", period, duration, (char *)NULL);
-
-        perror("Erro ao executar o bot");
-        exit(EXIT_FAILURE);
-    } else if (pid > 0) {
-        // Processo pai
-        close(botPipe[1]);  // Fecha a extremidade de escrita do pipe no processo pai
-        bot->pipe = botPipe[0];
-        bot->pid = pid;
-        return EXIT_SUCCESS;  // Retorna a extremidade de leitura do pipe no processo pai
-    }
-    perror("Erro ao criar processo para o bot.\n");
-    return EXIT_FAILURE;
-}
-
-
-void runBots(Game *game) {
-
-    int period = 30, duration = 5 + (game->currentLevel * 5);
-
-    game->nBots = 0;
-    while (game->nBots < game->currentLevel + 1) {
-
-        Bot * currentBot = &game->bots[game->nBots];
-
-        if( executeBot(currentBot, period, duration) == EXIT_FAILURE )
-            continue;
-
-        // start thread
-
-        currentBot->id = game->nBots;    // Bot ID = index in array
-        currentBot->period = period;
-        currentBot->duration = duration;
-
-        period -= 5;
-        duration -= 5;
-        game->nBots++;
-    }
-}
-
-
-
-void botThread(Bot * bot, Map * currentMap, Game * game, Mutexes * mutx) {
+void* botThread(void * arg) {
+    // Parse arguments into local pointers
+    Bot* bot = (Bot*) ((BotThreadArg*) arg)->thisBot;
+    Map* currentMap = (Map*) ((BotThreadArg*) arg)->currentMap;
+    Mutexes* mutx = (Mutexes*) ((BotThreadArg*) arg)->mutexes;
+    Player* players = (Player*) ((BotThreadArg*) arg)->players;
+    int nPlayers = (int) ((BotThreadArg*) arg)->nPlayers;
 
     ModifyMapMessage msg = {.symbol = CHAR_ROCK};
 
@@ -74,13 +20,12 @@ void botThread(Bot * bot, Map * currentMap, Game * game, Mutexes * mutx) {
     while(true){
 
         // Wait for new coordinates
-        int sval = selectPipe(&selectHandler, pipesToWatch, sizeof(pipesToWatch), &waitTime);
-        if( sval == 0 ){
+        if( selectPipe(&selectHandler, pipesToWatch, sizeof(pipesToWatch), &waitTime) == 0 ){
             // Timeout = current rock has to be removed
 
             // Free position in map
             pthread_mutex_lock(&mutx->currentMap);
-            currentMap->cmap[msg.pos.x][msg.pos.y] = FREE_SPACE;   // assign position to this rock
+            currentMap->cmap[msg.pos.x][msg.pos.y] = FREE_SPACE;   // free up position where rock is
             pthread_mutex_unlock(&mutx->currentMap);
 
             msg.symbol = FREE_SPACE;
@@ -98,8 +43,10 @@ void botThread(Bot * bot, Map * currentMap, Game * game, Mutexes * mutx) {
 
             // chech if position is free
             pthread_mutex_lock(&mutx->currentMap);
-            if( currentMap->cmap[msg.pos.x][msg.pos.y] != FREE_SPACE )
+            if( currentMap->cmap[msg.pos.x][msg.pos.y] != FREE_SPACE ){
+                pthread_mutex_unlock(&mutx->currentMap);
                 continue;
+            }
             currentMap->cmap[msg.pos.x][msg.pos.y] = CHAR_ROCK;   // assign position to this rock
             pthread_mutex_unlock(&mutx->currentMap);
 
@@ -111,8 +58,84 @@ void botThread(Bot * bot, Map * currentMap, Game * game, Mutexes * mutx) {
         }
 
         // broadcast changes
-        broadcastMessageToPlayers(game, ModifyMap, &msg, sizeof(msg), &mutx->players);
+        broadcastMessageToPlayers(players, nPlayers, ModifyMap, &msg, sizeof(msg), &mutx->players);
 
     }
 
+}
+
+
+int executeBot(Bot *bot, int period, int duration) {
+    int botPipe[2];
+    if (pipe(botPipe) == -1) {
+        perror("Erro ao criar pipe para bot.\n");
+        return EXIT_FAILURE;
+    }
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // Processo do bot
+        close(botPipe[0]);  // Fecha a extremidade de leitura do pipe no processo do bot
+        close(STDOUT_FILENO);    // Fecha STDOUT default
+
+        dup(botPipe[1]);  // Duplica a extremidade de escrita do pipe para STDOUT (posiçao mais baixa disponivel)
+        close(botPipe[1]);  // Fecha a extremidade de escrita do pipe
+
+        char periodArg[sizeof(int)];
+        char durationArg[sizeof(int)];
+        sprintf(periodArg, "%d", period);
+        sprintf(durationArg, "%d", duration);
+
+        execlp("./bot", "./bot", periodArg, durationArg, (char *)NULL);
+
+        perror("Erro ao executar o bot");
+        exit(EXIT_FAILURE);
+    } else if (pid > 0) {
+        // Processo pai
+        close(botPipe[1]);  // Fecha a extremidade de escrita do pipe no processo pai
+        bot->pipe = botPipe[0];
+        bot->pid = pid;
+        return EXIT_SUCCESS;  // Retorna a extremidade de leitura do pipe no processo pai
+    }
+    perror("Erro ao criar processo para o bot.\n");
+    return EXIT_FAILURE;
+}
+
+
+void runBots(Game *game, Map *currentMap, Mutexes *mutexes) {
+    // Execute bots according to game level
+
+    int period = 30, duration = 5 + (game->currentLevel * 5);
+
+    game->nBots = 0;
+    while (game->nBots < game->currentLevel + 1) {
+
+        Bot * currentBot = &game->bots[game->nBots];
+
+        if( executeBot(currentBot, period, duration) == EXIT_FAILURE )
+            continue;
+
+        currentBot->id = game->nBots;    // Bot ID = index in array
+        currentBot->period = period;
+        currentBot->duration = duration;
+
+        // start thread
+        BotThreadArg arg = {
+                .thisBot = currentBot,
+                .currentMap = currentMap,
+                .mutexes = mutexes,
+                .players = game->players,
+                .nPlayers = game->nPlayers
+        };
+        if ( pthread_create(&currentBot->threadId, NULL, botThread, &arg ) != 0){
+            perror("\nERRO ao tentar criar thread para um bot");
+            kill(currentBot->pid, SIGINT);
+            continue;
+        }
+
+        period -= 5;
+        duration -= 5;
+        game->nBots++;
+    }
 }

@@ -21,8 +21,16 @@
 #include "motor_backend.h"
 
 
-void runBots(Game *game);
+void runBots(Game *game, Map *currentMap, Mutexes *mutexes);
 
+
+typedef struct {
+    Bot* thisBot;
+    Map* currentMap;
+    Mutexes* mutexes;
+    Player* players;
+    int nPlayers;
+} BotThreadArg;
 
 
 #endif //SO_TP_MOTOR_BOTS_H

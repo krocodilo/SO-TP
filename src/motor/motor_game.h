@@ -19,6 +19,7 @@
 #include "../common/utils.h"
 #include "data_structs.h"
 #include "motor_backend.h"
+#include "motor_bots.h"
 
 
 

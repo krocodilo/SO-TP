@@ -17,6 +17,7 @@ typedef struct {
 
 typedef struct {
     int id, period, duration;
+    pthread_t threadId;
     pid_t pid;
     int pipe;
 } Bot;

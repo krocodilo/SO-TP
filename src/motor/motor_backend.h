@@ -7,6 +7,7 @@
 #include "../common/utils.h"
 #include "data_structs.h"
 
-void broadcastMessageToPlayers(Game * game, int msgType, void * msg, int msgSize, pthread_mutex_t * playersMutex);
+void broadcastMessageToPlayers(Player players[], int nPlayers, int msgType, void * msg, int msgSize,
+                               pthread_mutex_t * playersMutex);
 
 #endif //SO_TP_MOTOR_BACKEND_H

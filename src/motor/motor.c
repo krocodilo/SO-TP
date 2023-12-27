@@ -29,7 +29,7 @@ void terminate(int exitcode){
 
     // Terminate all bots
     for( ;game->nBots > 0; game->nBots-- ){
-        kill(game->bots[game->nBots-1].pid, SIGTERM);
+        kill(game->bots[game->nBots-1].pid, SIGINT);
 //        wait(???); // esperar que os bots terminem
     }
 
@@ -128,20 +128,13 @@ int main(int argc, char *argv[]) {
     }
     resetGame(game);
 
-
-    runBots(game);
-    exit(0);
-
-
     // Read Environment Variables
     if( readEnvironmentVariables(&gameSettings) == EXIT_FAILURE )
         terminate(EXIT_FAILURE);
 
-
     // Register signal handler
     signal(SIGINT, terminate);
     signal(SIGTERM, terminate);
-
 
     // Create and open general pipe
     game->generalPipe = create_and_open(GENERAL_PIPE, O_RDWR);

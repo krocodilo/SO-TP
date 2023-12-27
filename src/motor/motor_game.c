@@ -34,16 +34,15 @@ bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
 }
 
 // Send new map to all players
-void broadcastNewMap(Game * game, Map * currentMap, Mutexes* mutx) {
+void broadcastNewMap(int currentLevel, Player *players, int nPlayers, Map * currentMap, Mutexes* mutx) {
     pthread_mutex_lock(&mutx->currentMap);
 
-    NewLevelMessage mapMsg = {game->currentLevel};
+    NewLevelMessage mapMsg = {currentLevel};
     copyMap(&mapMsg.map, currentMap);
-    broadcastMessageToPlayers(game, NewLevel, &mapMsg, sizeof(mapMsg), &mutx->players);
+    broadcastMessageToPlayers(players, nPlayers, NewLevel, &mapMsg, sizeof(mapMsg), &mutx->players);
 
     pthread_mutex_unlock(&mutx->currentMap);
 }
-
 
 
 // Game Logic
@@ -62,13 +61,28 @@ void* gameThread(void* arg) {
         printf("Iniciou o nivel %d", game->currentLevel);
 
         // Send new map
-        broadcastNewMap(game, &currentMap, mutx);
+        broadcastNewMap(game->currentLevel, game->players, game->nPlayers, &currentMap, mutx);
 
-        // Start bots
+        // Run bots
+        runBots(game, &currentMap, mutx);
 
+        // Start game logic
+//        struct timeval waitTime = {-1, 0};
+//        int pipeToWatch[1] = {game->generalPipe};
+//        fd_set selectHandler;
+//        while(true) {
+//
+//            if( selectPipe(&selecHandler, pipeToWatch, sizeof(pipeToWatch), waitTime) == 0) {
+//                // Timeout
+//                break;
+//            }
+//        }
 
 
         sleep(100000000);
+
+
+
         game->currentLevel++;
     }
     return NULL;

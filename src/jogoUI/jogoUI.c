@@ -47,8 +47,6 @@ void controloTeclas() {
     
     Character player = initCharacter(3, 15, 'H');
 
-    //lerMapa
-
 
     
     mostraMapa(mapawin, 18, 81, &player, map);
