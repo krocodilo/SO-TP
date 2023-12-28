@@ -137,8 +137,6 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map m
 
     wattron(mapawin,COLOR_PAIR(1));
 
-    //mvwprintw(*win, 1,1,"MAPA");
-
     ///////////////////////////////////////
 
 
@@ -158,7 +156,7 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map m
 
 
     wattron(mapawin,COLOR_WHITE);
-    drawCharacter(mapawin,*player);
+//    drawCharacter(mapawin,*player);
     wattroff(mapawin,COLOR_WHITE);
 
     noecho();

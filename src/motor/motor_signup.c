@@ -16,7 +16,7 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
     // To be used with select()
     struct timeval waitTime = {gameSettings.signupWindowDurationSeconds, 0};
     fd_set selectHandler;
-    int pipesToWatch[2] = {game->generalPipe, 0};
+    int pipesToWatch[2] = {game->generalPipe, STDIN_FILENO};
 
     printf("\n\nEsta aberta a inscricao de jogadores...\n");
 
@@ -26,15 +26,17 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
           !(hasTimedOut && game->nPlayers >= gameSettings.minPlayers)
         // sai se ja terminou a espera, mas entretanto ja tem o minimo de jogadores
             ){
-        printf(">  ");
+        printf("\n>  ");
         fflush(stdout);
 
-        int sval = selectPipe(&selectHandler, pipesToWatch, sizeof(pipesToWatch), &waitTime);
+        // Wait for something
+        int sval = selectPipe(&selectHandler, pipesToWatch, 2, &waitTime);
 
         if( pipeIsSet(game->generalPipe, &selectHandler) ){
             // Read pipe
             receiveNewPlayer(game);
         }
+//        if( FD_ISSET(STDIN_FILENO, &selectHandler) ){
         if( pipeIsSet(0, &selectHandler) ){
             // Read STDIN
             switch ( readSignupCommands(game) ) {
@@ -55,9 +57,8 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
             else
                 break;
         }
-        else if(sval == -1)
+        else if( sval == -1 )
             perror("\n\nErro na espera de jogadores.");
-
     }
     return EXIT_SUCCESS;
 }
@@ -129,27 +130,21 @@ int readSignupCommands(Game* game) {
         return EXIT_FAILURE;
     }
 
-    // Remover a nova linha do final do comando
-    size_t command_length = strlen(command);
-    if (command_length > 0 && command[command_length - 1] == '\n') {
-        command[command_length - 1] = '\0';
-    }
-
-    if (strcmp(command, "start") == 0) {
+    if (strncmp(command, "start", 5) == 0) {
         // Verificar condições para iniciar o jogo
         if (game->nPlayers >= 1) {
-            printf("\nIniciando o jogo...\n");
+            printf("\nIniciando o jogo manualmente...\n");
             return EXIT_SUCCESS;
         } else
             printf("\nNúmero insuficiente de jogadores para iniciar o jogo. É necessario pelo menos 1 jogador.\n");
     }
-    else if (strcmp(command, "players") == 0) {
+    else if (strncmp(command, "players", 7) == 0) {
         // Exibir informações dos jogadores
         for (int i = 0; i < game->nPlayers; i++)
             printf("\nJogador %d: %s\n", i + 1, game->players[i].username);
         return -1;
     }
-    else if (strcmp(command, "exit") == 0) {
+    else if (strncmp(command, "exit", 4) == 0) {
         // Sair do jogo
         printf("\nSaindo do jogo...\n");
         return EXIT_FAILURE;

@@ -3,8 +3,9 @@
 
 
 void* communicationsThread(void* arg) {
-    int myPipe = ((CommunicationsThreadArg*) arg)->myPipe;
-    Map * map = ((CommunicationsThreadArg*) arg)->map;
+    int myPipe = (int) ((CommunicationsThreadArg*) arg)->myPipe;
+    Map * map = (Map*) ((CommunicationsThreadArg*) arg)->map;
+    Windows * windows = (Windows*) ((CommunicationsThreadArg*) arg)->windows;
 
     while(true) {
         switch ( readNextMessageType(myPipe) ) {
@@ -14,10 +15,24 @@ void* communicationsThread(void* arg) {
                     perror("\nErro ao ler a proxima mensagem no pipe.");
                     break;
                 }
-                memcpy(map, &msg.map, sizeof(Map));
+//                memcpy(map, &msg.map, sizeof(Map));
+                copyMap(map, &msg.map);
 
-                // TODO - mostraMapa()
+                mostraMapa(windows->mapawin, 18, 81, NULL, *map);
 
+                // todo show level
+
+                break;
+            }
+            case ModifyMap: {
+                ModifyMapMessage msg;
+                if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
+                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    break;
+                }
+                map->cmap[msg.pos.y][msg.pos.x] = msg.symbol;
+
+                mostraMapa(windows->mapawin, 18, 81, NULL, *map);
                 break;
             }
             default:

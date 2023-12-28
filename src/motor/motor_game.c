@@ -58,13 +58,15 @@ void* gameThread(void* arg) {
     game->currentLevel = 1;
     while(game->currentLevel <= MAX_LEVELS ) {
         copyMap(&currentMap, &maps[game->currentLevel-1]);  // create a copy of this level's map, to then be modified
-        printf("Iniciou o nivel %d", game->currentLevel);
+        printf("Iniciou o nivel %d\n", game->currentLevel);
 
         // Send new map
         broadcastNewMap(game->currentLevel, game->players, game->nPlayers, &currentMap, mutx);
+        printf("Novo mapa foi enviado aos jogadores.\n");
 
         // Run bots
         runBots(game, &currentMap, mutx);
+        printf("Bots foram executados.\n");
 
         // Start game logic
 //        struct timeval waitTime = {-1, 0};
@@ -80,7 +82,7 @@ void* gameThread(void* arg) {
 
 
         sleep(100000000);
-
+        printf("!!! STOPPED WAITING !!!!");
 
 
         game->currentLevel++;

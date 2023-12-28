@@ -1,4 +1,7 @@
+#include <pthread.h>
+
 #include "windows_ncurses.h"
+#include "jogoUI_backend.h"
 
 
 SignUpMessage userInfo;
@@ -35,29 +38,22 @@ Character initCharacter(int x, int y, char symbol) {
 }
 
 // Função para controlo de teclas
-void controloTeclas() {
-    keypad(stdscr, TRUE);
-    WINDOW * mapawin;
-    WINDOW * nivelwin;
-    WINDOW * jogadoreswin;
-    WINDOW * bloqueioswin;
-    WINDOW * pedraswin;
-    WINDOW * Commandwin;
-    WINDOW * notificationwin;
+void controloTeclas(Windows* windows) {
+//    keypad(stdscr, TRUE);
     
     Character player = initCharacter(3, 15, 'H');
 
 
     
-    mostraMapa(mapawin, 18, 81, &player, map);
-    nivel(nivelwin, 0, 0);
-    jogadores(jogadoreswin, 0, 0);
-    bloqueios(bloqueioswin, 0, 0);
-    pedras(pedraswin, 0, 0);
-    executeCommand(" ",notificationwin, 0, 0);
+    mostraMapa(windows->mapawin, 18, 81, &player, map);
+    nivel(windows->nivelwin, 0, 0);
+    jogadores(windows->jogadoreswin, 0, 0);
+    bloqueios(windows->bloqueioswin, 0, 0);
+    pedras(windows->pedraswin, 0, 0);
+    executeCommand(" ",windows->notificationwin, 0, 0);
     char *command;
 
-    comandos2(Commandwin);  
+    comandos2(windows->Commandwin);
    
     int ch;
     
@@ -75,7 +71,7 @@ void controloTeclas() {
                     ((player.x) < 79))
                 {          	   
                     (player.y)--;
-                    mostraMapa(mapawin, 18, 81, &player, map);
+                    mostraMapa(windows->mapawin, 18, 81, &player, map);
                 }
                 break;
 	    case KEY_DOWN:
@@ -86,7 +82,7 @@ void controloTeclas() {
             ((player.x) < 79))
                 {
 		    (player.y)++;
-		    mostraMapa(mapawin, 18, 81, &player, map);
+		    mostraMapa(windows->mapawin, 18, 81, &player, map);
 		}
 		break;
 	    case KEY_LEFT:
@@ -98,7 +94,7 @@ void controloTeclas() {
 		{
 		    (player.x)--;
 		    (player.x)--;
-		    mostraMapa(mapawin, 18, 81, &player, map);
+		    mostraMapa(windows->mapawin, 18, 81, &player, map);
 		}
 		break;
 	    case KEY_RIGHT:
@@ -110,15 +106,15 @@ void controloTeclas() {
                 {
 		    (player.x)++;
 		    (player.x)++;
-		    mostraMapa(mapawin, 18, 81, &player, map);
+		    mostraMapa(windows->mapawin, 18, 81, &player, map);
 		}
 		break;          
             case ' ':                          
                     // Se estiver no modo de comando, execute o comando
-                    command = comandos(Commandwin);
-                    processCommand( command, Commandwin);
+                    command = comandos(windows->Commandwin);
+                    processCommand( command, windows->Commandwin);
                     free( command);
-                    comandos2(Commandwin);  
+                    comandos2(windows->Commandwin);
                                                                      
                  
                 break;
@@ -131,7 +127,7 @@ void controloTeclas() {
 
 
 int main(int argc, char *argv[]) {
-
+    Windows windows;
 
     // Register signal handler
     signal(SIGINT, terminate);
@@ -181,27 +177,39 @@ int main(int argc, char *argv[]) {
     printf("\nFoi enviada mensagem de inscricao.");
     fflush(stdout);
 
-
+    // Wait for confirmation
     int type = readNextMessageType(myPipe);
     if( type != SignUpSuccessful ) {
         fprintf(stderr, "\nERRO, esperava receber mensagem de sucesso. Recebu mensagem #%d", type);
         terminate(EXIT_FAILURE);
     }
 
-    switch (readNextMessageType(myPipe)) {
-        case NewLevel: {
-            NewLevelMessage msg;
-            if( ! readNextMessage(myPipe, &msg, sizeof(msg)) ){
-                perror("\nErro ao ler a proxima mensagem no pipe.");
-                break;
-            }
-//            memcpy(&map, &msg.map, sizeof(Map));
-            copyMap(&map, &msg.map);
-            break;
-        }
-        default:
-            perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
-            terminate(1);
+//    switch (readNextMessageType(myPipe)) {
+//        case NewLevel: {
+//            NewLevelMessage msg;
+//            if( ! readNextMessage(myPipe, &msg, sizeof(msg)) ){
+//                perror("\nErro ao ler a proxima mensagem no pipe.");
+//                break;
+//            }
+////            memcpy(&map, &msg.map, sizeof(Map));
+//            copyMap(&map, &msg.map);
+//            break;
+//        }
+//        default:
+//            perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
+//            terminate(1);
+//    }
+
+    // Start listening to messages from motor
+    CommunicationsThreadArg arg = {
+            .myPipe = myPipe,
+            .map = &map,
+            .windows = &windows
+    };
+    pthread_t id;
+    if( pthread_create(&id, NULL, communicationsThread, &arg) != 0 ){
+        perror("\nERRO ao criar thread de comunicacoes.\n");
+        terminate(EXIT_FAILURE);
     }
 
     ////////////////////////////////////////////
@@ -211,13 +219,13 @@ int main(int argc, char *argv[]) {
     initscr();
     noecho();
     keypad(stdscr, TRUE);
-
+    flushinp();     // limpar input
 
     //menu de jogo
     //runMenuLogic();
 
-    flushinp();
-    controloTeclas();
+
+    controloTeclas(&windows);
     
     //getch();
     endwin();

@@ -51,4 +51,17 @@ void destroyCharacter(Character *character);
 
 
 
+typedef struct {
+    WINDOW * mapawin;
+    WINDOW * nivelwin;
+    WINDOW * jogadoreswin;
+    WINDOW * bloqueioswin;
+    WINDOW * pedraswin;
+    WINDOW * Commandwin;
+    WINDOW * notificationwin;
+} Windows;
+
+
+
+
 #endif //SO_TP_WINDOWS_NCURSES_H

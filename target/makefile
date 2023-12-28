@@ -19,7 +19,8 @@ bot: $(bot_dir)/*
 
 jogoUI: utils.o $(jogoUI_dir)/* $(common_dir)/*
 	gcc -c $(jogoUI_dir)/windows_ncurses.c -o windows_ncurses.o -lncurses
-	gcc -o jogoUI $(jogoUI_dir)/jogoUI.c utils.o windows_ncurses.o -lncurses
+	gcc -c $(jogoUI_dir)/jogoUI_backend.c -o jogoUI_backend.o
+	gcc -o jogoUI $(jogoUI_dir)/jogoUI.c utils.o windows_ncurses.o jogoUI_backend.o -lncurses -pthread
 
 utils.o: $(common_dir)/utils.c $(common_dir)/utils.h
 	gcc -c $(common_dir)/utils.c -o utils.o

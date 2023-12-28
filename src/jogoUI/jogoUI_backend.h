@@ -20,12 +20,14 @@
 #include "../common/constants.h"
 #include "../common/messages.h"
 #include "../common/utils.h"
+#include "windows_ncurses.h"
 
 void* communicationsThread(void* arg);
 
 typedef struct {
     int myPipe;
     Map * map;
+    Windows * windows;
 } CommunicationsThreadArg;
 
 #endif

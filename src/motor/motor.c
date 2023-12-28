@@ -23,6 +23,7 @@ Map map[MAX_LEVELS];
 
 
 void terminate(int exitcode){
+    fflush(stdout);
     printf("\nTerminating...\n");
 
     // wait for all threads to join
@@ -159,10 +160,6 @@ int main(int argc, char *argv[]) {
         if( waitForClientsSignUp(gameSettings, game) == EXIT_FAILURE) {
             terminate(EXIT_FAILURE);
         }
-
-        // Make sure mutexes are unlocked
-        pthread_mutex_unlock(&mutexes.currentMap);
-        pthread_mutex_unlock(&mutexes.players);
 
         // Start game thread
         GameThreadArg arg = {
