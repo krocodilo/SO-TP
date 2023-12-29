@@ -24,7 +24,7 @@ void controloTeclas(Windows* windows, int generalPipe) {
 
     mostraMapa(windows->mapawin, 18, 81, NULL, map);
     nivel(windows->nivelwin, 0);
-    jogadores(windows->jogadoreswin, " ");
+    //jogadores(windows->jogadoreswin, " ");
     bloqueios(windows->bloqueioswin, 0);
     pedras(windows->pedraswin, 0);
     executeCommand(" ",windows->notificationwin, 0, 0);
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
 
     ////////////////////////////////////////////
 
-    printf("\e[8;28;83t");
+    printf("\e[8;30;83t");
 
     initscr();
     noecho();

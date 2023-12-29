@@ -113,7 +113,6 @@ int runMenuLogic() {
 
 //apaga window
 void destroy_win(WINDOW *local_win){
-
     wborder (local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 
     wrefresh(local_win);
@@ -172,9 +171,9 @@ void pedras(WINDOW *win, int nRocks) {
     int yMax, xMax,a;
     getmaxyx(stdscr, yMax, xMax);
 
-    int startY = (18);
-    int startX = (28);
-    int limiteX = (13);
+    int startY = (21);
+    int startX = (1);
+    int limiteX = (15);
 
     win = newwin(3, limiteX, startY, startX);
     box(win,0,0);
@@ -191,7 +190,7 @@ void pedras(WINDOW *win, int nRocks) {
 
     char string[2];
     sprintf(string, "%d", nRocks);
-    mvwprintw(win, 1, 9, "%s", string);
+    mvwprintw(win, 1, 12, "%s", string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -205,8 +204,8 @@ void bloqueios(WINDOW *win, int nMBlocks) {
     int yMax, xMax,a;
     getmaxyx(stdscr, yMax, xMax);
 
-    int startY = (18);
-    int startX = (12);
+    int startY = (24);
+    int startX = (1);
     int limiteX = (15);
 
     win = newwin(3, limiteX, startY, startX);
@@ -239,7 +238,7 @@ void nivel(WINDOW *win, int level) {
 
     int startY = (18);
     int startX = (1);
-    int limiteX = (10);
+    int limiteX = (15);
 
     win = newwin(3, limiteX, startY, startX);
     box(win,0,0);
@@ -257,7 +256,7 @@ void nivel(WINDOW *win, int level) {
 
     char string[2];
     sprintf(string, "%d", level);
-    mvwprintw(win, 1, 8, "%s", string);
+    mvwprintw(win, 1, 12, "%s", string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -305,10 +304,10 @@ void executeCommand(char *command,WINDOW *win, int height, int width) {
     getmaxyx(stdscr, yMax, xMax);
 
     int startY = (18);
-    int startX = (42);
-    int limiteX = (40);
+    int startX = (17);
+    int limiteX = (65);
 
-    win = newwin(7, limiteX, startY, startX);
+    win = newwin(9, limiteX, startY, startX);
     box(win,0,0);
 
     start_color();
@@ -336,7 +335,7 @@ char* comandos(WINDOW * comandwin){
     int yMax, xMax,a;
     getmaxyx(stdscr, yMax, xMax);
 
-    comandwin = newwin(3,81, 25,1);
+    comandwin = newwin(3,81, 27,1);
     box(comandwin,0,0);
 
     start_color();
@@ -365,7 +364,7 @@ void comandos2(WINDOW * comandwin){
     int yMax, xMax,a;
     getmaxyx(stdscr, yMax, xMax);
 
-    comandwin = newwin(3,81, 25,1);
+    comandwin = newwin(3,81, 27,1);
     box(comandwin,0,0);
 
     start_color();
