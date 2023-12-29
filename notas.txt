@@ -4,3 +4,5 @@
 - cada cliente cria o seu proprio pipe, onde recebe mensagens do motor. As mensagens dos clientes vão para o pipe geral do motor
 
 - todas as mensagens trocadas em named pipes são precedidas por um integer que indica o tipo da mensagem seguinte
+
+- ao executar os bots, existe um intervalo entre cada, para evitar bots a gerar os mesmos valores

@@ -107,6 +107,7 @@ void receiveNewPlayer(Game* game){
     // Save user details
     strcpy(newPlayer->username, msg.username);
     newPlayer->pid = msg.pid;
+    newPlayer->symbol = (char) toupper(newPlayer->username[0]);
 
     printf("\nO utilizador '%s' inscreveu-se no jogo.\n", newPlayer->username);
 

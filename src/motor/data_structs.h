@@ -23,7 +23,8 @@ typedef struct {
 } Bot;
 
 typedef struct {
-    Character info;
+    char symbol;
+    Position pos;
     int pid;
     char username[MAX_PLAYER_NAME];
     int pipe;

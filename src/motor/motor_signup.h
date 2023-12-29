@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <ctype.h>
 
 #include "data_structs.h"
 #include "../common/constants.h"

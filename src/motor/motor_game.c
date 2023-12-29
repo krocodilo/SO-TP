@@ -2,36 +2,22 @@
 
 
 
-
-// Função para inicializar o personagem
-Character initCharacter(int x, int y, char symbol) {
-    Character character;
-    character.x = x;
-    character.y = y;
-    character.symbol = symbol;
-    return character;
-}
-
-// Função para inicializar as coordenadas x e y dos jogadores
-void initializePlayers(Player players[], int numPlayers) {
-    for (int i = 0; i < numPlayers; i++) {
-        // Inicializa as coordenadas x para cada jogador com valores aleatórios entre 3 e 37
-        players[i].info = initCharacter(rand() % (37 - 3 + 1) + 3, 0, 'P'); // 'P' é apenas um exemplo
-        // Define o símbolo como o primeiro caractere no campo username
-        players[i].username[0] = players[i].info.symbol;
-        // Os caracteres restantes no campo username podem ser definidos conforme necessário
+void initializePlayerPositions(Player players[], int nPlayers, Map *currentMap, Mutexes *mutx) {
+    pthread_mutex_lock(&mutx->players);
+    pthread_mutex_lock(&mutx->currentMap);
+    for (int i = 0; i < nPlayers;) {
+        players[i].pos.y = rand() % (MAP_LINES + 1);
+        players[i].pos.x = rand() % (MAP_COLS + 1);
+        // Save, if position is free and valid
+        if( posIsValid(players[i].pos) && posIsFree(players[i].pos, currentMap) ){
+            currentMap->cmap[players[i].pos.y][players[i].pos.x] = players[i].symbol;
+            i++;
+        }
     }
+    pthread_mutex_unlock(&mutx->currentMap);
+    pthread_mutex_unlock(&mutx->players);
 }
 
-//Função para verificar se há colisão na próxima posição
-bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
-    // Ajusta as coordenadas do jogador para corresponder ao mapeamento no mapa
-    int playerMapY = nextY - 1;
-    int playerMapX = nextX / 2;
-
-    // Verifica se a próxima posição contém 'X' (obstáculo)
-    return mapa[playerMapY][playerMapX] == 'X';
-}
 
 // Send new map to all players
 void broadcastNewMap(int currentLevel, Player *players, int nPlayers, Map * currentMap, Mutexes* mutx) {
@@ -54,37 +40,44 @@ void* gameThread(void* arg) {
     Mutexes* mutx = (Mutexes*) ((GameThreadArg*) arg)->mutexes;
 
     Map currentMap;
+    int levelDuration = settings->firstLevelDurationSeconds;
 
     game->currentLevel = 1;
     while(game->currentLevel <= MAX_LEVELS ) {
+        levelDuration -= settings->levelDurationDecreaseSeconds;
         copyMap(&currentMap, &maps[game->currentLevel-1]);  // create a copy of this level's map, to then be modified
-        printf("Iniciou o nivel %d\n", game->currentLevel);
+        printf("\nIniciou o nivel %d. Duração: %d\n", game->currentLevel, levelDuration);
+
+        // Initialize player positions in current map
+        initializePlayerPositions(game->players, game->nPlayers, &currentMap, mutx);
 
         // Send new map
         broadcastNewMap(game->currentLevel, game->players, game->nPlayers, &currentMap, mutx);
         printf("Novo mapa foi enviado aos jogadores.\n");
 
-        // Run bots
+        // Run bot threads
         runBots(game, &currentMap, mutx);
         printf("Bots foram executados.\n");
 
         // Start game logic
-//        struct timeval waitTime = {-1, 0};
-//        int pipeToWatch[1] = {game->generalPipe};
-//        fd_set selectHandler;
-//        while(true) {
-//
-//            if( selectPipe(&selecHandler, pipeToWatch, sizeof(pipeToWatch), waitTime) == 0) {
-//                // Timeout
-//                break;
-//            }
-//        }
+        struct timeval waitTime = {.tv_sec = levelDuration};
+        int pipesToWatch[1] = {game->generalPipe};
+        fd_set selectHandler;
+        while(true) {
+//            printf("Time left: %ld\n", waitTime.tv_sec);
+            if( selectPipe(&selectHandler, pipesToWatch, 1, &waitTime) == 0) {
+                // Level Timeout
+                break;
+            }
+            if(pipeIsSet(game->generalPipe, &selectHandler)) {
+                // If there's something to read
+                handleNewGameMessage(game, &currentMap, mutx);
+            }
+        }
+//        sleep(100000000);
+//        printf("!!! STOPPED WAITING !!!!");
 
-
-        sleep(100000000);
-        printf("!!! STOPPED WAITING !!!!");
-
-
+        // TODO kill bots
         game->currentLevel++;
     }
     return NULL;

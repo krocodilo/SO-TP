@@ -18,111 +18,42 @@ void terminate(int exitcode){
 }
 
 
-//Função para verificar se há colisão na próxima posição
-bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
-    // Ajusta as coordenadas do jogador para corresponder ao mapeamento no mapa
-    int playerMapY = nextY - 1;
-    int playerMapX = nextX / 2;
-
-    // Verifica se a próxima posição contém 'X' (obstáculo)
-    return mapa[playerMapY][playerMapX] == 'X';
-}
-
-// Função para inicializar o personagem
-Character initCharacter(int x, int y, char symbol) {
-    Character character;
-    character.x = x;
-    character.y = y;
-    character.symbol = symbol;
-    return character;
-}
-
 // Função para controlo de teclas
-void controloTeclas(Windows* windows) {
+void controloTeclas(Windows* windows, int generalPipe) {
 //    keypad(stdscr, TRUE);
-    
-    Character player = initCharacter(3, 15, 'H');
 
-
-    
-    mostraMapa(windows->mapawin, 18, 81, &player, map);
-    nivel(windows->nivelwin, 0, 0);
-    jogadores(windows->jogadoreswin, 0, 0);
-    bloqueios(windows->bloqueioswin, 0, 0);
-    pedras(windows->pedraswin, 0, 0);
+    mostraMapa(windows->mapawin, 18, 81, NULL, map);
+    nivel(windows->nivelwin, 0);
+    jogadores(windows->jogadoreswin, " ");
+    bloqueios(windows->bloqueioswin, 0);
+    pedras(windows->pedraswin, 0);
     executeCommand(" ",windows->notificationwin, 0, 0);
     char *command;
 
     comandos2(windows->Commandwin);
    
     int ch;
-    
     int exitRequested = 0;
     while ((ch = getch()) != 'q') {
-        int direction = 0;
-
         switch (ch) {
             case KEY_UP:
-                
-                if (!verificaColisao(map.cmap, player.y - 1, player.x) &&
-                    ((player.y-1) > 1) &&
-                    ((player.x) > 1) &&
-                    ((player.y-1) < 16) &&
-                    ((player.x) < 79))
-                {          	   
-                    (player.y)--;
-                    mostraMapa(windows->mapawin, 18, 81, &player, map);
-                }
+            case KEY_DOWN:
+            case KEY_LEFT:
+            case KEY_RIGHT: {
+                MoveRequestMessage msg = {userInfo.pid, ch};
+                writeMessage(generalPipe, MoveRequest, &msg, sizeof(msg));
                 break;
-	    case KEY_DOWN:
-		if (!verificaColisao(map.cmap, player.y + 1, player.x) &&
-            ((player.y+1) > 1) &&
-            ((player.x) > 1) &&
-            ((player.y+1) < 16) &&
-            ((player.x) < 79))
-                {
-		    (player.y)++;
-		    mostraMapa(windows->mapawin, 18, 81, &player, map);
-		}
-		break;
-	    case KEY_LEFT:
-		if (!verificaColisao(map.cmap, player.y, player.x - 2) &&
-            ((player.y) > 1) &&
-            ((player.x-2) > 1) &&
-            ((player.y) < 16) &&
-            ((player.x-2) < 79))
-		{
-		    (player.x)--;
-		    (player.x)--;
-		    mostraMapa(windows->mapawin, 18, 81, &player, map);
-		}
-		break;
-	    case KEY_RIGHT:
-		if (!verificaColisao(map.cmap, player.y, player.x + 1) &&
-            ((player.y) > 1) &&
-            ((player.x+2) > 1) &&
-            ((player.y) < 16) &&
-            ((player.x+2) < 79))
-                {
-		    (player.x)++;
-		    (player.x)++;
-		    mostraMapa(windows->mapawin, 18, 81, &player, map);
-		}
-		break;          
-            case ' ':                          
-                    // Se estiver no modo de comando, execute o comando
-                    command = comandos(windows->Commandwin);
-                    processCommand( command, windows->Commandwin);
-                    free( command);
-                    comandos2(windows->Commandwin);
-                                                                     
-                 
+            }
+            case ' ': {
+                // Se estiver no modo de comando, execute o comando
+                command = comandos(windows->Commandwin);
+                processCommand(command, windows->Commandwin, generalPipe);
+                free(command);
+                comandos2(windows->Commandwin);
                 break;
-            default:
-                direction = 0;
-                break;
+            }
         }
-    }  
+    }
 }
 
 
@@ -143,7 +74,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    strncpy(userInfo.username, argv[1], MAX_PLAYER_NAME);
+    strncpy(userInfo.username, argv[1], MAX_PLAYER_NAME-1);
     strcpy(userInfo.pipePath, PIPE_DIRECTORY);
     strcat(userInfo.pipePath, userInfo.username);
 
@@ -224,8 +155,7 @@ int main(int argc, char *argv[]) {
     //menu de jogo
     //runMenuLogic();
 
-
-    controloTeclas(&windows);
+    controloTeclas(&windows, generalPipe);
     
     //getch();
     endwin();

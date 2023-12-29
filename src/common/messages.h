@@ -33,6 +33,10 @@ typedef struct {
 } GenericMessage;
 
 typedef struct {
+
+} SignUpSuccessfulMessage;
+
+typedef struct {
     int level;
     Map map;
 } NewLevelMessage;
@@ -65,7 +69,7 @@ typedef struct {
 
 typedef struct {
     int pid;
-    Position pos;
+    int arrowKey;
 } MoveRequestMessage;
 
 typedef struct {

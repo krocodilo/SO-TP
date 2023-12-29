@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     GameSettings gameSettings;
 
 
-    // Inicialize o gerador de números aleatórios com uma semente
+    // Inicializar o gerador de números aleatórios com uma semente
     srand((unsigned int)time(NULL));
 
     // Read all map

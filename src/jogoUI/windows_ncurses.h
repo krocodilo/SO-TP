@@ -31,15 +31,18 @@
 int showMenu(char **choices, int n_choices, int *highlight);
 int runMenuLogic();
 void destroy_win(WINDOW *local_win);
+
 void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map);
-void pedras(WINDOW *win, int height, int width);
-void bloqueios(WINDOW *win, int height, int width);
-void nivel(WINDOW *win, int height, int width);
-void jogadores(WINDOW *win, int height, int width);
+void pedras(WINDOW *win, int nRocks);
+void bloqueios(WINDOW *win, int nMBlocks);
+void nivel(WINDOW *win, int level);
+void jogadores(WINDOW *win, char *playersCommaSeparated);
+
 void executeCommand(char *command,WINDOW *win, int height, int width);
 char* comandos(WINDOW * comandwin);
 void comandos2(WINDOW * comandwin);
-WINDOW* processCommand(char *command,WINDOW *centeredWin);
+WINDOW* processCommand(char *command, WINDOW *centeredWin, int generalPipe);
+
 void drawCharacter(WINDOW *win, Character character);
 void clearCharacter(WINDOW *win, Character character);
 void moveCharacter(WINDOW *win, Character *character, int dx, int dy);

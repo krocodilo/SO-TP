@@ -166,7 +166,7 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map m
 
 
 //mostra numero de pedras no mapa numa janela
-void pedras(WINDOW *win, int height, int width) {
+void pedras(WINDOW *win, int nRocks) {
 
 
     int yMax, xMax,a;
@@ -188,7 +188,10 @@ void pedras(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,9," ");
+
+    char string[2];
+    sprintf(string, "%d", nRocks);
+    mvwprintw(win, 1, 9, string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -196,7 +199,7 @@ void pedras(WINDOW *win, int height, int width) {
 }
 
 //mostra numero de bloqueios no mapa numa janela
-void bloqueios(WINDOW *win, int height, int width) {
+void bloqueios(WINDOW *win, int nMBlocks) {
 
 
     int yMax, xMax,a;
@@ -218,7 +221,10 @@ void bloqueios(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,12," ");
+
+    char string[2];
+    sprintf(string, "%d", nMBlocks);
+    mvwprintw(win, 1, 12, string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -226,7 +232,7 @@ void bloqueios(WINDOW *win, int height, int width) {
 }
 
 //mostra nivel do jogo numa janela *precisa de ser visto
-void nivel(WINDOW *win, int height, int width) {
+void nivel(WINDOW *win, int level) {
 
     int yMax, xMax,xMin, yMin,a;
     getmaxyx(stdscr, yMax, xMax);
@@ -243,12 +249,15 @@ void nivel(WINDOW *win, int height, int width) {
     init_color(COLOR_CYAN,0-999,0-999,0-999);
 
     wattron(win,COLOR_PAIR(1));
-    mvwprintw(win, 1,1,"Nivel:");
+    mvwprintw(win, 1, 1, "Nivel:");
     wattroff(win,COLOR_PAIR(1));
 
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1,8,"1");
+
+    char string[2];
+    sprintf(string, "%d", level);
+    mvwprintw(win, 1, 8, string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -256,7 +265,7 @@ void nivel(WINDOW *win, int height, int width) {
 }
 
 //mostra nome de jogadores no mapa numa janela *precisa de ser visto
-void jogadores(WINDOW *win, int height, int width) {
+void jogadores(WINDOW *win, char *playersCommaSeparated) {
 
 
     int yMax, xMax,a;
@@ -279,9 +288,7 @@ void jogadores(WINDOW *win, int height, int width) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-   // for (int i = 0; i < game->nPlayers; i++) {
-     //   mvwprintw(win, 1,12,"%s", game->players[i].username);
-    //}
+    mvwprintw(win, 1, 12, playersCommaSeparated);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -376,17 +383,20 @@ void comandos2(WINDOW * comandwin){
 }
 
 // Função para processar comandos do jogador
-WINDOW* processCommand(char *command,WINDOW * comando) {
+WINDOW* processCommand(char *command,WINDOW * comando, int generalPipe) {
 
     WINDOW *centeredWin;
 
-    if (strcmp(command, "players") == 0) {
+    if (strncmp(command, "players", 7) == 0) {
         /*
         printf("Lista de Jogadores:\n");
         for (int i = 0; i < game->nPlayers; i++) {
             printf("- %s\n", game->players[i].name);
         }*/
         executeCommand(command,centeredWin, 0, 0);
+
+        int msg = GetPlayersList;
+        write(generalPipe, &msg, sizeof(int));
     }else
 
     if (strncmp(command, "msg", 3) == 0) {
@@ -411,27 +421,7 @@ WINDOW* processCommand(char *command,WINDOW * comando) {
         {
             executeCommand("msg <nome_utilizador> <mensagem>",centeredWin, 0, 0);
         }
-
-
     }
-        //codes
-        ////////////////////////////////////////////////
-    else
-    if (strcmp(command, "n1") == 0) {
-        //game->currentLevel=1;
-        //lerMapa(game);
-    }
-    else
-    if (strcmp(command, "n2") == 0) {
-        //game->currentLevel=2;
-        //lerMapa(game);
-    }
-    else
-    if (strcmp(command, "n3") == 0) {
-        //game->currentLevel=3;
-        //lerMapa(game);
-    }
-        ////////////////////////////////////////////////////77
     else
     if (strcmp(command, "exit") == 0) {
 

@@ -11,7 +11,7 @@ motor: bot utils.o $(motor_dir)/* $(common_dir)/*
 	gcc -c $(motor_dir)/motor_signup.c -o motor_signup.o
 	gcc -c $(motor_dir)/motor_game.c -o motor_game.o -pthread
 	gcc -c $(motor_dir)/motor_bots.c -o motor_bots.o
-	gcc -c $(motor_dir)/motor_backend.c -o motor_backend.o
+	gcc -c $(motor_dir)/motor_backend.c -o motor_backend.o -lncurses
 	gcc -pthread -o motor $(motor_dir)/motor.c utils.o motor_init.o motor_signup.o motor_game.o motor_bots.o motor_backend.o
 
 bot: $(bot_dir)/*
