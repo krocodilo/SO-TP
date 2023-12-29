@@ -189,9 +189,9 @@ void pedras(WINDOW *win, int nRocks) {
 
     wattron(win,COLOR_PAIR(2));
 
-    char str[2];
-    sprintf(str, "%d", nRocks);
-    mvwprintw(win, 1, 9, str);
+    char string[2];
+    sprintf(string, "%d", nRocks);
+    mvwprintw(win, 1, 9, "%d", string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -222,9 +222,9 @@ void bloqueios(WINDOW *win, int nMBlocks) {
 
     wattron(win,COLOR_PAIR(2));
 
-    char str[2];
-    sprintf(str, "%d", nMBlocks);
-    mvwprintw(win, 1, 12, str);
+    char string[2];
+    sprintf(string, "%d", nMBlocks);
+    mvwprintw(win, 1, 12, "%d", string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -255,9 +255,9 @@ void nivel(WINDOW *win, int level) {
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
     wattron(win,COLOR_PAIR(2));
 
-    char str[2];
-    sprintf(str, "%d", level);
-    mvwprintw(win, 1, 8, str);
+    char string[2];
+    sprintf(string, "%d", level);
+    mvwprintw(win, 1, 8, "%d", string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
