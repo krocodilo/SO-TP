@@ -122,14 +122,9 @@ void destroy_win(WINDOW *local_win){
 //mostra mapa
 void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map) {
     echo();
-    int yMax, xMax,a;
-    getmaxyx(stdscr, yMax, xMax);
-    int startY = (0);
-    int startX = (1);
-    int limiteX = width;
-    int limiteY = height;
-    mapawin = newwin(limiteY, limiteX, startY, startX);
+
     box(mapawin,0,0);
+
     start_color();
 
     init_color(COLOR_CYAN,0-999,0-999,0-999);
@@ -167,15 +162,6 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map m
 //mostra numero de pedras no mapa numa janela
 void pedras(WINDOW *win, int nRocks) {
 
-
-    int yMax, xMax,a;
-    getmaxyx(stdscr, yMax, xMax);
-
-    int startY = (21);
-    int startX = (1);
-    int limiteX = (15);
-
-    win = newwin(3, limiteX, startY, startX);
     box(win,0,0);
 
     start_color();
@@ -200,15 +186,6 @@ void pedras(WINDOW *win, int nRocks) {
 //mostra numero de bloqueios no mapa numa janela
 void bloqueios(WINDOW *win, int nMBlocks) {
 
-
-    int yMax, xMax,a;
-    getmaxyx(stdscr, yMax, xMax);
-
-    int startY = (24);
-    int startX = (1);
-    int limiteX = (15);
-
-    win = newwin(3, limiteX, startY, startX);
     box(win,0,0);
 
     start_color();
@@ -233,14 +210,6 @@ void bloqueios(WINDOW *win, int nMBlocks) {
 //mostra nivel do jogo numa janela *precisa de ser visto
 void nivel(WINDOW *win, int level) {
 
-    int yMax, xMax,xMin, yMin,a;
-    getmaxyx(stdscr, yMax, xMax);
-
-    int startY = (18);
-    int startX = (1);
-    int limiteX = (15);
-
-    win = newwin(3, limiteX, startY, startX);
     box(win,0,0);
 
     start_color();
@@ -263,18 +232,9 @@ void nivel(WINDOW *win, int level) {
     wrefresh(win);
 }
 
-//mostra nome de jogadores no mapa numa janela *precisa de ser visto
+//mostra nome de jogadores no mapa numa janela *não é utilizado
 void jogadores(WINDOW *win, char *playersCommaSeparated) {
 
-
-    int yMax, xMax,a;
-    getmaxyx(stdscr, yMax, xMax);
-
-    int startY = (21);
-    int startX = (1);
-    int limiteX = (40);
-
-    win = newwin(4, limiteX, startY, startX);
     box(win,0,0);
 
     start_color();
@@ -299,15 +259,6 @@ void executeCommand(char *command,WINDOW *win, int height, int width) {
 
     echo();
 
-
-    int yMax, xMax,a;
-    getmaxyx(stdscr, yMax, xMax);
-
-    int startY = (18);
-    int startX = (17);
-    int limiteX = (65);
-
-    win = newwin(9, limiteX, startY, startX);
     box(win,0,0);
 
     start_color();
@@ -331,11 +282,6 @@ char* comandos(WINDOW * comandwin){
 
     echo();
 
-
-    int yMax, xMax,a;
-    getmaxyx(stdscr, yMax, xMax);
-
-    comandwin = newwin(3,81, 27,1);
     box(comandwin,0,0);
 
     start_color();
@@ -361,10 +307,6 @@ void comandos2(WINDOW * comandwin){
     initscr();
     noecho();
 
-    int yMax, xMax,a;
-    getmaxyx(stdscr, yMax, xMax);
-
-    comandwin = newwin(3,81, 27,1);
     box(comandwin,0,0);
 
     start_color();

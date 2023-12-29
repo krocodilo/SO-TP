@@ -22,9 +22,19 @@ void terminate(int exitcode){
 void controloTeclas(Windows* windows, int generalPipe) {
 //    keypad(stdscr, TRUE);
 
+    //newwin(limiteY, limiteX, startY, startX);
+
+    windows-> mapawin = newwin(18,81,0,1);
+    windows-> nivelwin = newwin(3,15,18,1);
+    windows-> bloqueioswin = newwin(3,15,24,1);
+    windows-> pedraswin = newwin(3,15,21,1);
+    windows-> Commandwin = newwin(3,81, 27,1);
+    windows-> notificationwin = newwin(9,65,18,17);
+
+
+
     mostraMapa(windows->mapawin, 18, 81, NULL, map);
     nivel(windows->nivelwin, 0);
-    //jogadores(windows->jogadoreswin, " ");
     bloqueios(windows->bloqueioswin, 0);
     pedras(windows->pedraswin, 0);
     executeCommand(" ",windows->notificationwin, 0, 0);
