@@ -8,8 +8,9 @@ void* communicationsThread(void* arg) {
     Windows * windows = (Windows*) ((CommunicationsThreadArg*) arg)->windows;
 
     int nRocks = 0, nMBlocks = 0;
+    bool running = true;
 
-    while(true) {
+    while(running) {
         switch ( readNextMessageType(myPipe) ) {
             case NewLevel: {
                 NewLevelMessage msg;
@@ -21,6 +22,27 @@ void* communicationsThread(void* arg) {
 
                 mostraMapa(windows->mapawin, 18, 81, NULL, *map);
                 nivel(windows->nivelwin, msg.level);
+                break;
+            }
+            case Move: {
+                MoveMessage msg;
+                if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
+                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    break;
+                }
+                // Check if it's a mobile block
+                if( map->cmap[msg.from.y][msg.from.x] == CHAR_MBLOCKS ){
+                    nMBlocks--;     // if its going to clear a mobile block
+                    bloqueios(windows->bloqueioswin, nMBlocks);
+                }
+                else if (msg.symbol == CHAR_MBLOCKS ){
+                    nMBlocks++;     // if its going to add a mobile block
+                    bloqueios(windows->bloqueioswin, nMBlocks);
+                }
+
+                map->cmap[msg.from.y][msg.from.x] = FREE_SPACE;
+                map->cmap[msg.to.y][msg.to.x] = msg.symbol;
+                mostraMapa(windows->mapawin, 18, 81, NULL, *map);
                 break;
             }
             case ModifyMap: {
@@ -53,27 +75,6 @@ void* communicationsThread(void* arg) {
 
                 break;
             }
-            case Move: {
-                MoveMessage msg;
-                if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
-                    perror("\nErro ao ler a proxima mensagem no pipe.");
-                    break;
-                }
-                // Check if it's a mobile block
-                if( map->cmap[msg.from.y][msg.from.x] == CHAR_MBLOCKS ){
-                    nMBlocks--;     // if its going to clear a mobile block
-                    bloqueios(windows->bloqueioswin, nMBlocks);
-                }
-                else if (msg.symbol == CHAR_MBLOCKS ){
-                    nMBlocks++;     // if its going to add a mobile block
-                    bloqueios(windows->bloqueioswin, nMBlocks);
-                }
-
-                map->cmap[msg.from.y][msg.from.x] = FREE_SPACE;
-                map->cmap[msg.to.y][msg.to.x] = msg.symbol;
-                mostraMapa(windows->mapawin, 18, 81, NULL, *map);
-                break;
-            }
             case PlayersList: {
                 PlayersListMessage msg;
                 if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
@@ -89,6 +90,13 @@ void* communicationsThread(void* arg) {
 
                 // Print list in window
                 jogadores(windows->jogadoreswin, commaSeparatedList);
+                break;
+            }
+            case TextMsg: {
+
+            }
+            case Terminate: {
+                running = false;
                 break;
             }
             default:

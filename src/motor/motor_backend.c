@@ -11,6 +11,12 @@ void broadcastMessageToPlayers(Player players[], int nPlayers, int msgType, void
     pthread_mutex_unlock(playersMutex);
 }
 
+bool sendMessageToPlayer(Player *p, int msgType, void * msg, int msgSize, pthread_mutex_t * playersMutex) {
+    pthread_mutex_lock(playersMutex);
+
+    pthread_mutex_unlock(playersMutex);
+}
+
 
 Player* getPlayerByPID(int pid, Player players[], int nPlayers, pthread_mutex_t *playersMutex) {
     Player* ptr = NULL;
@@ -20,6 +26,15 @@ Player* getPlayerByPID(int pid, Player players[], int nPlayers, pthread_mutex_t 
             ptr = &players[i];
     pthread_mutex_unlock(playersMutex);
     return ptr;
+}
+
+void removePlayer(Player *p, Player players[], int nPlayers, pthread_mutex_t *playersMutex) {
+//    fgsgtsgr
+//    pthread_mutex_lock(playersMutex);
+//    for(int i = 0; i < nPlayers; i++)
+//        if(players[i].pid == pid)
+//            ptr = &players[i];
+//    pthread_mutex_unlock(playersMutex);
 }
 
 
@@ -84,7 +99,7 @@ void handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
                 break;
             }
             // Get Player reference
-            Player* player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
+            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
             if(player == NULL){
                 fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
                 break;
@@ -94,22 +109,63 @@ void handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
             break;
         }
         case GetPlayersList: {
+            GenericRequestMessage msg;
+            if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
+                perror("\nErro ao ler a proxima mensagem no pipe.");
+                break;
+            }
+            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
+            if(player == NULL){
+                fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
+                break;
+            }
+
             PlayersListMessage pMsg;
             pthread_mutex_lock(&mutx->players);
 
             pMsg.nPlayers = game->nPlayers;
-            for(int i = 0; i < game->nPlayers; i++)
+            for(int i = 0; i < game->nPlayers; i++) {
                 strncpy(pMsg.players[i], game->players[i].username, MAX_PLAYER_NAME);
+            }
 
             pthread_mutex_unlock(&mutx->players);
 
             // Send changes to players
-            broadcastMessageToPlayers(game->players, game->nPlayers, PlayersList, &pMsg, sizeof(pMsg), &mutx->players);
+            sendMessageToPlayer(player, PlayersList, &pMsg, sizeof(pMsg), &mutx->players);
             break;
         }
         case LeaveGame: {
+            GenericRequestMessage msg;
+            if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
+                perror("\nErro ao ler a proxima mensagem no pipe.");
+                break;
+            }
+            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
+            if(player == NULL){
+                fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
+                break;
+            }
+            TextMessage infoMsg;
+            strncpy(infoMsg.from, "Admin", MAX_PLAYER_NAME-1);
+
+            pthread_mutex_lock(&mutx->players);
+            snprintf(infoMsg.message, MAX_MESSAGE_SIZE-1, "Player %s has left the game.", player->username);
+            Position playerPos = player->pos;
+            pthread_mutex_unlock(&mutx->players);
+
+            // Warn all players
+            broadcastMessageToPlayers(game->players, game->nPlayers, TextMsg, &infoMsg,
+                                      sizeof(infoMsg), &mutx->players);
+            // Update all maps
+            ModifyMapMessage modMsg = {playerPos, FREE_SPACE};
+            broadcastMessageToPlayers(game->players, game->nPlayers, ModifyMap, &modMsg,
+                                      sizeof(modMsg), &mutx->players);
+            // Remove player
+            removePlayer(player, game->players, game->nPlayers, &mutx->players);
             break;
         }
+        case SignUpSuccessful:
+            break;  // ignore
         default:
             perror("\nErro ao ler o tipo da proxima mensagem no pipe. Tipo irreconhecível.");
     }

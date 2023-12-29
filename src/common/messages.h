@@ -18,8 +18,8 @@ enum MessageTypes {
     // Sent by jogoUI:
     SignUp,
     MoveRequest,
-    GetPlayersList,     // Sends no additional message
-    LeaveGame,          // Sends no additional message
+    GetPlayersList,     // Sends GenericRequest
+    LeaveGame,          // Sends GenericRequest
 
     TextMsg             // Sent directly to other players
 };
@@ -76,6 +76,10 @@ typedef struct {
     char from[MAX_PLAYER_NAME];
     char message[MAX_MESSAGE_SIZE];
 } TextMessage;
+
+typedef struct {
+    int pid;
+} GenericRequestMessage;
 
 
 ////////////////////////////////////////////////////
