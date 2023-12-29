@@ -191,7 +191,7 @@ void pedras(WINDOW *win, int nRocks) {
 
     char string[2];
     sprintf(string, "%d", nRocks);
-    mvwprintw(win, 1, 9, "%d", string);
+    mvwprintw(win, 1, 9, "%s", string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -224,7 +224,7 @@ void bloqueios(WINDOW *win, int nMBlocks) {
 
     char string[2];
     sprintf(string, "%d", nMBlocks);
-    mvwprintw(win, 1, 12, "%d", string);
+    mvwprintw(win, 1, 12, "%s", string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
@@ -257,7 +257,7 @@ void nivel(WINDOW *win, int level) {
 
     char string[2];
     sprintf(string, "%d", level);
-    mvwprintw(win, 1, 8, "%d", string);
+    mvwprintw(win, 1, 8, "%s", string);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
