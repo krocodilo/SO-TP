@@ -288,7 +288,7 @@ void jogadores(WINDOW *win, char *playersCommaSeparated) {
     wattroff(win,COLOR_PAIR(1));
 
     wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1, 12, playersCommaSeparated);
+    mvwprintw(win, 1, 12, "%s", playersCommaSeparated);
     wattroff(win,COLOR_PAIR(2));
 
     refresh();
