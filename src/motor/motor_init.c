@@ -7,8 +7,10 @@
 void resetGame(Game* game) {
     game->nPlayers = 0;
     game->nBots = 0;
-    game->generalPipe = -1;
+    game->nMBlocks = 0;
     game->currentLevel = 1;
+    game->generalPipe = -1;
+    game->nRocks = 0;
 }
 
 

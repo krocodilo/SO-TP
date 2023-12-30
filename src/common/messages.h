@@ -28,9 +28,9 @@ enum MessageTypes {
 ////////////////////////////////////////////////////
 // Sent by motor:
 
-typedef struct {
-    char message[MAX_MESSAGE_SIZE];
-} GenericMessage;
+//typedef struct {
+//    char message[MAX_MESSAGE_SIZE];
+//} GenericMessage;
 
 typedef struct {
 

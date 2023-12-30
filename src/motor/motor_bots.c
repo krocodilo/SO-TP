@@ -4,7 +4,10 @@
 
 void* botThread(void * arg) {
     // Parse arguments into local pointers
-    Bot *bot = (Bot *) ((BotThreadArg *) arg)->thisBot;
+//    Bot *bot = (Bot *) ((BotThreadArg *) arg)->thisBot;
+    int botId = (int) ((BotThreadArg *) arg)->botId;
+    int botPipe = (int) ((BotThreadArg *) arg)->botPipe;
+    int duration = (int) ((BotThreadArg *) arg)->duration;
     Map *currentMap = (Map *) ((BotThreadArg *) arg)->currentMap;
     Mutexes *mutx = (Mutexes *) ((BotThreadArg *) arg)->mutexes;
     Player *players = (Player *) ((BotThreadArg *) arg)->players;
@@ -16,10 +19,10 @@ void* botThread(void * arg) {
         ModifyMapMessage msg = {.symbol = CHAR_ROCK};
 
         // Wait for new coordinates
-        read(bot->pipe, output, sizeof(output));
+        read(botPipe, output, sizeof(output));
         if( sscanf(output, "%d %d ", &msg.pos.x, &msg.pos.y) != 2 ){
             // If it can't read two integers
-            fprintf(stderr, "\nERRO ao ler ouput do bot #%d: %s", bot->id, output);
+            fprintf(stderr, "\nERRO ao ler ouput do bot #%d: %s", botId, output);
             break;
         }
 
@@ -40,7 +43,7 @@ void* botThread(void * arg) {
 //        fflush(stdout);
 
         // Wait to remove the rock
-        sleep(bot->duration);
+        sleep(duration);
 
         pthread_mutex_lock(&mutx->currentMap);
         currentMap->cmap[msg.pos.y][msg.pos.x] = FREE_SPACE;   // free up position where rock is
@@ -100,8 +103,12 @@ void runBots(Game *game, Map *currentMap, Mutexes *mutexes) {
     int period = 5, duration =3;    // todo
 //    int period = 30, duration = 5 + (game->currentLevel * 5);
 
+    pthread_mutex_lock(&mutexes->bots);
     game->nBots = 0;
     while (game->nBots < game->currentLevel + 1) {
+
+        if( game->nBots != 0 )
+            sleep(1);   // necessary to avoid bots generating same values
 
         Bot * currentBot = &game->bots[game->nBots];
 
@@ -118,7 +125,10 @@ void runBots(Game *game, Map *currentMap, Mutexes *mutexes) {
             perror("\nERRO: ao alocar memoria para um bot.\n");
             return;
         }
-        arg->thisBot = currentBot;
+//        arg->thisBot = currentBot;
+        arg->botId = currentBot->id;
+        arg->botPipe = currentBot->pipe;
+        arg->duration = currentBot->duration;
         arg->currentMap = currentMap;
         arg->mutexes = mutexes;
         arg->players = game->players;
@@ -129,9 +139,10 @@ void runBots(Game *game, Map *currentMap, Mutexes *mutexes) {
             continue;
         }
 
-//        period -= 5;  // todo
+//        period -= 5;  // todo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //        duration -= 5;
         game->nBots++;
-        sleep(1); // necessary to avoid bots generating same values
+        printf("Bot #%d foi lançado.\n", currentBot->id);
     }
+    pthread_mutex_unlock(&mutexes->bots);
 }

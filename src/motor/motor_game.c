@@ -6,7 +6,7 @@ void initializePlayerPositions(Player players[], int nPlayers, Map *currentMap, 
     pthread_mutex_lock(&mutx->players);
     pthread_mutex_lock(&mutx->currentMap);
     for (int i = 0; i < nPlayers;) {
-        players[i].pos.y = rand() % (MAP_LINES + 1);
+        players[i].pos.y = MAP_LINES-1; //rand() % (MAP_LINES + 1);
         players[i].pos.x = rand() % (MAP_COLS + 1);
         // Save, if position is free and valid
         if( posIsValid(players[i].pos) && posIsFree(players[i].pos, currentMap) ){
@@ -35,50 +35,65 @@ void broadcastNewMap(int currentLevel, Player *players, int nPlayers, Map * curr
 void* gameThread(void* arg) {
     // Parse arguments into local pointers
     Game* game = (Game*) ((GameThreadArg*) arg)->game;
-    Map* maps = (Map*) ((GameThreadArg*) arg)->maps;
+    Map* allMaps = (Map*) ((GameThreadArg*) arg)->maps;
     GameSettings* settings = (GameSettings*) ((GameThreadArg*) arg)->settings;
     Mutexes* mutx = (Mutexes*) ((GameThreadArg*) arg)->mutexes;
 
-    Map currentMap;
+    // Select variables
+    struct timeval waitTime = {.tv_sec = -1};
+    int pipesToWatch[1] = {game->generalPipe};
+    fd_set selectHandler;
+
+    Map* currentMap = &game->currentMap;
     int levelDuration = settings->firstLevelDurationSeconds;
 
     game->currentLevel = 1;
-    while(game->currentLevel <= MAX_LEVELS ) {
+    bool gameIsRunning = true;
+    while( gameIsRunning && game->currentLevel <= MAX_LEVELS ) {
+
         levelDuration -= settings->levelDurationDecreaseSeconds;
-        copyMap(&currentMap, &maps[game->currentLevel-1]);  // create a copy of this level's map, to then be modified
+        copyMap(currentMap, &allMaps[game->currentLevel-1]);  // create a copy of this level's map, to then be modified
         printf("\nIniciou o nivel %d. Duração: %d\n", game->currentLevel, levelDuration);
 
         // Initialize player positions in current map
-        initializePlayerPositions(game->players, game->nPlayers, &currentMap, mutx);
+        initializePlayerPositions(game->players, game->nPlayers, currentMap, mutx);
 
         // Send new map
-        broadcastNewMap(game->currentLevel, game->players, game->nPlayers, &currentMap, mutx);
+        broadcastNewMap(game->currentLevel, game->players, game->nPlayers, currentMap, mutx);
         printf("Novo mapa foi enviado aos jogadores.\n");
 
         // Run bot threads
-        runBots(game, &currentMap, mutx);
-        printf("Bots foram executados.\n");
+        runBots(game, currentMap, mutx);
+
+        waitTime.tv_sec = levelDuration;    // Set level timeout
 
         // Start game logic
-        struct timeval waitTime = {.tv_sec = levelDuration};
-        int pipesToWatch[1] = {game->generalPipe};
-        fd_set selectHandler;
-        while(true) {
+        printf("Motor esta a escuta de mensagens...\n");
+        bool levelIsWon = false;
+        while( gameIsRunning && !levelIsWon ) {
 //            printf("Time left: %ld\n", waitTime.tv_sec);
             if( selectPipe(&selectHandler, pipesToWatch, 1, &waitTime) == 0) {
                 // Level Timeout
+                printf("Level timeout.\n");
                 break;
             }
             if(pipeIsSet(game->generalPipe, &selectHandler)) {
                 // If there's something to read
-                handleNewGameMessage(game, &currentMap, mutx);
+                switch( handleNewGameMessage(game, currentMap, mutx) ) {
+                    case 1:
+                        levelIsWon = true;
+                        continue;
+                    case -1:
+                        gameIsRunning = false;
+                        continue;
+                }
             }
         }
-//        sleep(100000000);
-//        printf("!!! STOPPED WAITING !!!!");
 
         // TODO kill bots
         game->currentLevel++;
     }
+            sleep(100000000);               // TODO !!!!!!!!!!!!!!!!!!!
+        printf("!!! STOPPED WAITING !!!!");
     return NULL;
 }

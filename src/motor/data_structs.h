@@ -32,12 +32,14 @@ typedef struct {
 
 typedef struct {
     Player players[MAX_PLAYERS];
-    Bot bots[MAX_BOTS];
-    int generalPipe; // file descriptor for general pipe
     int nPlayers;
+    Bot bots[MAX_BOTS];
     int nBots;
+    pthread_t mBlocks[MAX_MBLOCKS];
+    int nMBlocks;
+    Map currentMap;
     int currentLevel;
-    int nBlocks;
+    int generalPipe; // file descriptor for general pipe
     int nRocks;
 } Game;
 
@@ -53,6 +55,7 @@ typedef struct {
 typedef struct {
     pthread_mutex_t currentMap;
     pthread_mutex_t players;
+    pthread_mutex_t bots;
 } Mutexes;
 
 

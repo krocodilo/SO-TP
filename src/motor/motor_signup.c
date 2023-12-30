@@ -117,7 +117,7 @@ void receiveNewPlayer(Game* game){
 //imprimir lista de comandos
 void printCommandInstructions() {
     printf("\nComandos disponíveis:\n");
-    printf("\t- start   : Iniciar o jogo\n");
+    printf("\t- begin   : Iniciar o jogo\n");
     printf("\t- players : Exibir informações dos jogadores\n");
     printf("\t- exit    : Sair do jogo\n");
 }
@@ -131,7 +131,7 @@ int readSignupCommands(Game* game) {
         return EXIT_FAILURE;
     }
 
-    if (strncmp(command, "start", 5) == 0) {
+    if (strncmp(command, "begin", 5) == 0) {
         // Verificar condições para iniciar o jogo
         if (game->nPlayers >= 1) {
             printf("\nIniciando o jogo manualmente...\n");

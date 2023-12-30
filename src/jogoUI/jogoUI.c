@@ -5,7 +5,7 @@
 
 
 SignUpMessage userInfo;
-Map map;
+Map allMaps;
 
 
 void terminate(int exitcode){
@@ -33,7 +33,7 @@ void controloTeclas(Windows* windows, int generalPipe) {
 
 
 
-    mostraMapa(windows->mapawin, 18, 81, NULL, map);
+    mostraMapa(windows->mapawin, 18, 81, NULL, allMaps);
     nivel(windows->nivelwin, 0);
     bloqueios(windows->bloqueioswin, 0);
     pedras(windows->pedraswin, 0);
@@ -132,8 +132,8 @@ int main(int argc, char *argv[]) {
 //                perror("\nErro ao ler a proxima mensagem no pipe.");
 //                break;
 //            }
-////            memcpy(&map, &msg.map, sizeof(Map));
-//            copyMap(&map, &msg.map);
+////            memcpy(&allMaps, &msg.allMaps, sizeof(Map));
+//            copyMap(&allMaps, &msg.allMaps);
 //            break;
 //        }
 //        default:
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
     // Start listening to messages from motor
     CommunicationsThreadArg arg = {
             .myPipe = myPipe,
-            .map = &map,
+            .map = &allMaps,
             .windows = &windows
     };
     pthread_t id;

@@ -1,6 +1,124 @@
 #include "motor_backend.h"
 
 
+//bool sendMessageToPlayer(Player *p, int msgType, void * msg, int msgSize, pthread_mutex_t * playersMutex);
+Player* getPlayerByPID(int pid, Player players[], int nPlayers, pthread_mutex_t *playersMutex);
+void removePlayer(Player *p, Player players[], int *nPlayers, pthread_mutex_t *playersMutex);
+int executeMoveRequest(Player *p, Map *currentMap, int arrowKey, Game *game, Mutexes *mutx);
+
+
+int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
+    /*
+     * Returns:
+     *      1 - if a player has won the current level
+     *      0 - if all is ok
+     *      -1 - if there are no players left
+     */
+
+    switch ( readNextMessageType(game->generalPipe) ) {
+        case MoveRequest: {
+            MoveRequestMessage msg;
+            if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
+                perror("\nErro ao ler a proxima mensagem no pipe.");
+                break;
+            }
+            // Get Player reference
+            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
+            if(player == NULL){
+                fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
+                break;
+            }
+            // Execute move, if position is free
+            if( executeMoveRequest(player, currentMap, msg.arrowKey, game, mutx) == EXIT_SUCCESS ){
+
+                TextMessage infoMsg;
+                strncpy(infoMsg.from, "Motor", MAX_PLAYER_NAME-1);
+
+                pthread_mutex_lock(&mutx->players);
+                snprintf(infoMsg.message, MAX_MESSAGE_SIZE-1, "Player '%s' has won level %d.", player->username, game->currentLevel);
+                pthread_mutex_unlock(&mutx->players);
+
+                // Inform all players
+                broadcastMessageToPlayers(game->players, game->nPlayers, TextMsg, &infoMsg,
+                                          sizeof(infoMsg), &mutx->players);
+                return 1;
+            }
+            break;
+        }
+        case GetPlayersList: {
+            GenericRequestMessage msg;
+            if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
+                perror("\nErro ao ler a proxima mensagem no pipe.");
+                break;
+            }
+            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
+            if(player == NULL){
+                fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
+                break;
+            }
+
+            PlayersListMessage plMsg;
+            pthread_mutex_lock(&mutx->players);
+
+            plMsg.nPlayers = game->nPlayers;
+            for(int i = 0; i < game->nPlayers; i++) {
+                strncpy(plMsg.players[i], game->players[i].username, MAX_PLAYER_NAME);
+            }
+            // Send changes to players
+            if( ! writeMessage(player->pipe, PlayersList, &plMsg, sizeof(plMsg)) )
+                fprintf(stderr, "Erro ao enviar mensagem #%d para %s.", PlayersList, player->username);
+
+//            sendMessageToPlayer(player, PlayersList, &pMsg, sizeof(pMsg), &mutx->players);
+            pthread_mutex_unlock(&mutx->players);
+            break;
+        }
+        case LeaveGame: {
+            GenericRequestMessage msg;
+            if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
+                perror("\nErro ao ler a proxima mensagem no pipe.");
+                break;
+            }
+            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
+            if(player == NULL){
+                fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
+                break;
+            }
+            TextMessage infoMsg;
+            strncpy(infoMsg.from, "Motor", MAX_PLAYER_NAME-1);
+
+            pthread_mutex_lock(&mutx->players);
+            snprintf(infoMsg.message, MAX_MESSAGE_SIZE-1, "Player %s has left the game.", player->username);
+            Position playerPos = player->pos;
+            pthread_mutex_unlock(&mutx->players);
+
+            // Inform all players
+            broadcastMessageToPlayers(game->players, game->nPlayers, TextMsg, &infoMsg,
+                                      sizeof(infoMsg), &mutx->players);
+            // Update all maps
+            ModifyMapMessage modMsg = {playerPos, FREE_SPACE};
+            broadcastMessageToPlayers(game->players, game->nPlayers, ModifyMap, &modMsg,
+                                      sizeof(modMsg), &mutx->players);
+            // Remove player
+            removePlayer(player, game->players, &game->nPlayers, &mutx->players);
+
+            if( game->nPlayers == 0 ){
+                printf("\nAll players have left the game.");
+                return -1;
+            }
+            break;
+        }
+        case SignUpSuccessful:{
+            SignUpMessage msg;
+            readNextMessage(game->generalPipe, &msg, sizeof(msg));
+            // ignore
+            break;
+        }
+        default:
+            perror("\nErro ao ler o tipo da proxima mensagem no pipe. Tipo irreconhecível.");
+    }
+    return 0;
+}
+
 
 void broadcastMessageToPlayers(Player players[], int nPlayers, int msgType, void * msg, int msgSize,
                                pthread_mutex_t * playersMutex) {
@@ -11,10 +129,11 @@ void broadcastMessageToPlayers(Player players[], int nPlayers, int msgType, void
     pthread_mutex_unlock(playersMutex);
 }
 
-bool sendMessageToPlayer(Player *p, int msgType, void * msg, int msgSize, pthread_mutex_t * playersMutex) {
-    pthread_mutex_lock(playersMutex);
 
-    pthread_mutex_unlock(playersMutex);
+bool sendMessageToPlayer(Player *p, int msgType, void * msg, int msgSize, pthread_mutex_t * playersMutex) {
+//    pthread_mutex_lock(playersMutex);
+//
+//    pthread_mutex_unlock(playersMutex);
 }
 
 
@@ -28,13 +147,25 @@ Player* getPlayerByPID(int pid, Player players[], int nPlayers, pthread_mutex_t 
     return ptr;
 }
 
-void removePlayer(Player *p, Player players[], int nPlayers, pthread_mutex_t *playersMutex) {
-//    fgsgtsgr
-//    pthread_mutex_lock(playersMutex);
-//    for(int i = 0; i < nPlayers; i++)
-//        if(players[i].pid == pid)
-//            ptr = &players[i];
-//    pthread_mutex_unlock(playersMutex);
+
+void removePlayer(Player *p, Player players[], int *nPlayers, pthread_mutex_t *playersMutex) {
+    pthread_mutex_lock(playersMutex);
+    if (p->pid != players[*nPlayers-1].pid) {
+        // If player to be removed is not the last in the array
+        bool shiftBack = false;
+        for(int i = 0; i < *nPlayers; i++){
+            if (players[i].pid == p->pid){
+                shiftBack = true;
+                continue;
+            }
+            if (shiftBack == true)
+                // Moves element on current index to previous index
+                memmove(&players[i-1], &players[i], sizeof(Player));
+        }
+    }
+    // If player to be removed is the last, then simply decrese counter of players
+    *nPlayers--;
+    pthread_mutex_unlock(playersMutex);
 }
 
 
@@ -48,7 +179,11 @@ bool posIsFree(Position pos, Map *map) {
 }
 
 
-void executeMoveRequest(Player *p, Map *currentMap, int arrowKey, Game *game, Mutexes *mutx) {
+int executeMoveRequest(Player *p, Map *currentMap, int arrowKey, Game *game, Mutexes *mutx) {
+    /*
+     * Returns:
+     *       EXIT_SUCCESS - if the player has won the level
+     */
     pthread_mutex_lock(&mutx->players);
     Position pos = p->pos;
     pthread_mutex_unlock(&mutx->players);
@@ -59,16 +194,23 @@ void executeMoveRequest(Player *p, Map *currentMap, int arrowKey, Game *game, Mu
         case KEY_DOWN: reqPos.y += 1; break;
         case KEY_LEFT: reqPos.x -= 1; break;
         case KEY_RIGHT: reqPos.x += 1; break;
-        default: return;
+        default: return EXIT_FAILURE;
     }
+    if( ! posIsValid(reqPos) ){
+        if( reqPos.y < 0 )
+            return EXIT_SUCCESS;    // Player has won
+        return EXIT_FAILURE;    // Invalid requested position
+    }
+
     pthread_mutex_lock(&mutx->currentMap);
     // Check if position is valid and free
-    if( ! posIsValid(reqPos) || ! posIsFree(reqPos, currentMap) ){
+    if( ! posIsFree(reqPos, currentMap) ){
         pthread_mutex_unlock(&mutx->currentMap);
-        printf("\n-> Player %s wanted to move to occupied position y:%d x:%d", p->username, reqPos.y, reqPos.x);
-        fflush(stdout);
-        return;
+//        printf("\n-> Player '%s' wanted to move to occupied position y:%d x:%d", p->username, reqPos.y, reqPos.x);
+//        fflush(stdout);
+        return EXIT_FAILURE;
     }
+
     // Update map
     currentMap->cmap[reqPos.y][reqPos.x] = p->symbol;
     currentMap->cmap[pos.y][pos.x] = FREE_SPACE;
@@ -86,97 +228,20 @@ void executeMoveRequest(Player *p, Map *currentMap, int arrowKey, Game *game, Mu
 
     // Send changes to players
     broadcastMessageToPlayers(game->players, game->nPlayers, Move, &msg, sizeof(msg), &mutx->players);
+
+    return EXIT_FAILURE;
 }
 
 
-void handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
-
-    switch ( readNextMessageType(game->generalPipe) ) {
-        case MoveRequest: {
-            MoveRequestMessage msg;
-            if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
-                perror("\nErro ao ler a proxima mensagem no pipe.");
-                break;
-            }
-            // Get Player reference
-            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
-            if(player == NULL){
-                fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
-                break;
-            }
-            // Execute move, if position is free
-            executeMoveRequest(player, currentMap, msg.arrowKey, game, mutx);
+Position randomFreePosition(Map *map, pthread_mutex_t *mapMutex) {
+    Position pos;
+    pthread_mutex_lock(mapMutex);
+    while(true) {
+        pos.y = rand() % (MAP_LINES + 1);
+        pos.x = rand() % (MAP_COLS + 1);
+        if( posIsValid(pos) && posIsFree(pos, map) )
             break;
-        }
-        case GetPlayersList: {
-            GenericRequestMessage msg;
-            if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
-                perror("\nErro ao ler a proxima mensagem no pipe.");
-                break;
-            }
-            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
-            if(player == NULL){
-                fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
-                break;
-            }
-
-            PlayersListMessage pMsg;
-            pthread_mutex_lock(&mutx->players);
-
-            pMsg.nPlayers = game->nPlayers;
-            for(int i = 0; i < game->nPlayers; i++) {
-                strncpy(pMsg.players[i], game->players[i].username, MAX_PLAYER_NAME);
-            }
-
-            pthread_mutex_unlock(&mutx->players);
-
-            // Send changes to players
-            sendMessageToPlayer(player, PlayersList, &pMsg, sizeof(pMsg), &mutx->players);
-            break;
-        }
-        case LeaveGame: {
-            GenericRequestMessage msg;
-            if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
-                perror("\nErro ao ler a proxima mensagem no pipe.");
-                break;
-            }
-            Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
-            if(player == NULL){
-                fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
-                break;
-            }
-            TextMessage infoMsg;
-            strncpy(infoMsg.from, "Admin", MAX_PLAYER_NAME-1);
-
-            pthread_mutex_lock(&mutx->players);
-            snprintf(infoMsg.message, MAX_MESSAGE_SIZE-1, "Player %s has left the game.", player->username);
-            Position playerPos = player->pos;
-            pthread_mutex_unlock(&mutx->players);
-
-            // Warn all players
-            broadcastMessageToPlayers(game->players, game->nPlayers, TextMsg, &infoMsg,
-                                      sizeof(infoMsg), &mutx->players);
-            // Update all maps
-            ModifyMapMessage modMsg = {playerPos, FREE_SPACE};
-            broadcastMessageToPlayers(game->players, game->nPlayers, ModifyMap, &modMsg,
-                                      sizeof(modMsg), &mutx->players);
-            // Remove player
-            removePlayer(player, game->players, game->nPlayers, &mutx->players);
-            break;
-        }
-        case SignUpSuccessful:
-            break;  // ignore
-        default:
-            perror("\nErro ao ler o tipo da proxima mensagem no pipe. Tipo irreconhecível.");
     }
+    pthread_mutex_unlock(mapMutex);
+    return pos;
 }
-
-//Função para verificar se há colisão na próxima posição
-//bool verificaColisao(char mapa[][MAP_COLS + 1], int nextY, int nextX) {
-//    // Ajusta as coordenadas do jogador para corresponder ao mapeamento no mapa
-//    int playerMapY = nextY - 1;
-//    int playerMapX = nextX / 2;
-//
-//    // Verifica se a próxima posição contém 'X' (obstáculo)
-//    return mapa[playerMapY][playerMapX] == 'X';
-//}

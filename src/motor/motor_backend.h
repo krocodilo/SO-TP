@@ -10,11 +10,15 @@
 #include "../common/messages.h"
 #include "data_structs.h"
 
+
+int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx);
 void broadcastMessageToPlayers(Player players[], int nPlayers, int msgType, void * msg, int msgSize,
                                pthread_mutex_t * playersMutex);
 bool posIsValid(Position pos);
 bool posIsFree(Position pos, Map *map);
-void handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx);
+Position randomFreePosition(Map *map, pthread_mutex_t *mapMutex);
+
+
 
 
 

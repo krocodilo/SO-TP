@@ -94,6 +94,7 @@ void* communicationsThread(void* arg) {
             }
             case TextMsg: {
 
+                break;
             }
             case Terminate: {
                 running = false;

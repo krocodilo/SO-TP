@@ -25,7 +25,8 @@ void runBots(Game *game, Map *currentMap, Mutexes *mutexes);
 
 
 typedef struct {
-    Bot* thisBot;
+//    Bot* thisBot;
+    int botId, botPipe, duration;
     Map* currentMap;
     Mutexes* mutexes;
     Player* players;
