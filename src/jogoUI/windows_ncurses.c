@@ -1,116 +1,5 @@
 #include "windows_ncurses.h"
 
-
-//Menu inicial
-///////////////////////////////////////////////////////////////////////////
-
-int showMenu(char **choices, int n_choices, int *highlight) {
-    initscr();
-    keypad(stdscr, TRUE);
-    curs_set(0);
-
-    int menu_height = 8;
-    int menu_width = 20;
-    int start_y = (LINES - menu_height) / 2;
-    int start_x = (COLS - menu_width) / 2;
-
-
-    start_color();
-    init_pair(1, COLOR_WHITE, COLOR_BLACK);
-
-    WINDOW *menu_win = newwin(menu_height, menu_width, start_y, start_x);
-    box(menu_win, 0, 0);
-    wattron(menu_win,COLOR_PAIR(1));
-    wrefresh(menu_win);
-
-    int c;
-    int op = 0;
-
-    // Configura o timeout para 100 milissegundos (0.1 segundo)
-    timeout(100);
-
-    while (op != 1) {
-        wclear(menu_win);
-        box(menu_win, 0, 0);
-
-        for (int i = 0; i < n_choices; ++i) {
-            if (*highlight == i + 1) {
-                wattron(menu_win, A_REVERSE);
-                mvwprintw(menu_win, i + 1, 1, "%s", choices[i]);
-                wattroff(menu_win, A_REVERSE);
-            } else {
-                mvwprintw(menu_win, i + 1, 1, "%s", choices[i]);
-            }
-        }
-
-        wrefresh(menu_win);
-
-        // Leitura de entrada com timeout
-        c = getch();
-        if (c != ERR) {
-            switch (c) {
-                case KEY_UP:
-                    if (*highlight == 1)
-                        *highlight = n_choices;
-                    else
-                        --(*highlight);
-                    break;
-                case KEY_DOWN:
-                    if (*highlight == n_choices)
-                        *highlight = 1;
-                    else
-                        ++(*highlight);
-                    break;
-                case 10:  // Enter key
-                    op = 1;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-    wattroff(menu_win,COLOR_PAIR(1));
-    werase(menu_win);
-    wrefresh(menu_win);
-    destroy_win(menu_win);
-    endwin();
-    keypad(stdscr, FALSE);
-    return *highlight;
-}
-
-//lógica do menu
-int runMenuLogic() {
-    int op = 0;
-
-    while (op != 1) {
-        char *menuChoices[] = {"Jogar", "Opcoes", "Sobre", "Sair"};
-        int n_menuChoices = sizeof(menuChoices) / sizeof(menuChoices[0]);
-        int highlight = 1;
-
-        int selectedOption = showMenu(menuChoices, n_menuChoices, &highlight);
-
-        switch (selectedOption) {
-            case 1:
-                // Jogar
-                op = 1;
-                break;
-            case 2:
-                // Opcoes
-                break;
-            case 3:
-                // Sobre
-                break;
-            case 4:
-                // Sair
-                exit(1);
-        }
-    }
-    return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////
-
-
 //apaga window
 void destroy_win(WINDOW *local_win){
     wborder (local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
@@ -122,7 +11,7 @@ void destroy_win(WINDOW *local_win){
 //mostra mapa
 void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map) {
     echo();
-
+    curs_set(0);
     box(mapawin,0,0);
 
     start_color();
@@ -130,9 +19,6 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map m
     init_color(COLOR_CYAN,0-999,0-999,0-999);
 
     wattron(mapawin,COLOR_PAIR(1));
-
-    ///////////////////////////////////////
-
 
     for (int i = 0; i < MAP_LINES; i++) {
         if (map.cmap[i][0] != '\0') {
@@ -143,15 +29,7 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map m
         }
     }
 
-
-    ///////////////////////////////////////
-
     wattroff(mapawin,COLOR_PAIR(1));
-
-
-    wattron(mapawin,COLOR_WHITE);
-//    drawCharacter(mapawin,*player);
-    wattroff(mapawin,COLOR_WHITE);
 
     noecho();
     refresh();
@@ -256,9 +134,10 @@ void jogadores(WINDOW *win, char *playersCommaSeparated) {
 
 //mostra O COMANDO ACIONADO
 void executeCommand(char *command,WINDOW *win) {
-
     echo();
-
+    werase(win);
+    refresh();
+    wrefresh(win);
     box(win,0,0);
 
     start_color();
@@ -302,6 +181,7 @@ char* comandos(WINDOW * comandwin){
 
 //modo jogo
 void comandos2(WINDOW * comandwin){
+    werase(comandwin);
     curs_set(0);
     raw();
     initscr();
@@ -319,12 +199,10 @@ void comandos2(WINDOW * comandwin){
 
     refresh();
     wrefresh(comandwin);
-
-
 }
 
 // Função para processar comandos do jogador
-WINDOW* processCommand(char *command, WINDOW * window, int generalPipe) {
+WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const char *senderUsername) {
 
 
     if (strncmp(command, "players", 7) == 0) {
@@ -334,6 +212,7 @@ WINDOW* processCommand(char *command, WINDOW * window, int generalPipe) {
     }
 
     else if (strncmp(command, "msg", 3) == 0) {
+
 
         char *cmd = strtok(command, " ");
         char *targetName = strtok(NULL, " ");
@@ -345,18 +224,33 @@ WINDOW* processCommand(char *command, WINDOW * window, int generalPipe) {
             strcpy(userPipeName, PIPE_DIRECTORY);
             strcat(userPipeName, targetName);
 
-            int userPipe = open(GENERAL_PIPE, O_WRONLY);
+            int userPipe = open(userPipeName, O_WRONLY);
             if (userPipe == -1){
-                perror("\nERRO ao tentar abrir o pipe do utilizador.\n");
+                executeCommand("Nome de jogador não existente", window);
                 return NULL;
             }
 
             TextMessage msg = {
-                .from = "TO-DO" // TODO
+                    .from = {0},
             };
+
+            size_t senderUsernameLength = strlen(senderUsername);
+            size_t maxCopyLength = sizeof(msg.from) - 1;  // Garante espaço para o caractere nulo
+            size_t copyLength = senderUsernameLength < maxCopyLength ? senderUsernameLength : maxCopyLength;
+
+            // Use strncpy para copiar a string
+            strncpy(msg.from, senderUsername, copyLength);
+
+            // Certifique-se de terminar a string com null
+            msg.from[copyLength] = '\0';
+
             strncpy(msg.message, message, MAX_MESSAGE_SIZE);
 
-            write(userPipe, &msg, sizeof(msg));
+            if (!writeMessage(userPipe, MessageTypeForPrivateMessage, &msg, sizeof(msg))) {
+                executeCommand("ERRO ao enviar a mensagem para o destinatário.", window);
+                close(userPipe);
+                return NULL;
+            }
             close(userPipe);
 
             /*

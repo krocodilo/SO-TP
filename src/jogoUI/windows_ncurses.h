@@ -27,9 +27,6 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 3
 
-
-int showMenu(char **choices, int n_choices, int *highlight);
-int runMenuLogic();
 void destroy_win(WINDOW *local_win);
 
 void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map);
@@ -41,13 +38,13 @@ void jogadores(WINDOW *win, char *playersCommaSeparated);
 void executeCommand(char *command,WINDOW *win);
 char* comandos(WINDOW * comandwin);
 void comandos2(WINDOW * comandwin);
-WINDOW* processCommand(char *command, WINDOW *window, int generalPipe);
+WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const char *senderUsername);
+
 
 void drawCharacter(WINDOW *win, Character character);
 void clearCharacter(WINDOW *win, Character character);
 void moveCharacter(WINDOW *win, Character *character, int dx, int dy);
 void destroyCharacter(Character *character);
-
 
 //int validatePlayerName(Player activePlayers[], int numActivePlayers, char *name);
 //void listBots(Game *game);
@@ -64,7 +61,7 @@ typedef struct {
     WINDOW * notificationwin;
 } Windows;
 
-
+#define MessageTypeForPrivateMessage 42
 
 
 #endif //SO_TP_WINDOWS_NCURSES_H

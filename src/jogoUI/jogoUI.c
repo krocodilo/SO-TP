@@ -53,7 +53,7 @@ void controloTeclas(Windows* windows, int generalPipe) {
             case ' ': {
                 // Se estiver no modo de comando, executa o comando
                 command = comandos(windows->Commandwin);
-                processCommand(command, windows->Commandwin, generalPipe);
+                processCommand(command, windows->notificationwin, generalPipe, userInfo.username);
                 free(command);
                 comandos2(windows->Commandwin);
                 break;
@@ -64,8 +64,8 @@ void controloTeclas(Windows* windows, int generalPipe) {
 
 
 int main(int argc, char *argv[]) {
+    printf("\e[8;30;83t");
     Windows windows;
-
     // Register signal handler
     signal(SIGINT, terminate);
     signal(SIGTERM, terminate);
@@ -135,19 +135,13 @@ int main(int argc, char *argv[]) {
 
     ////////////////////////////////////////////
 
-    printf("\e[8;30;83t");
-
     initscr();
     noecho();
     keypad(stdscr, TRUE);
     flushinp();     // limpar input
 
-    //menu de jogo
-    //runMenuLogic();
-
     controloTeclas(&windows, generalPipe);
-    
-    //getch();
+
     endwin();
 
     close(myPipe);
