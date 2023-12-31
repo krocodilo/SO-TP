@@ -213,7 +213,6 @@ WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const cha
 
     else if (strncmp(command, "msg", 3) == 0) {
 
-
         char *cmd = strtok(command, " ");
         char *targetName = strtok(NULL, " ");
         char *message = strtok(NULL, "");
@@ -231,22 +230,22 @@ WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const cha
             }
 
             TextMessage msg = {
-                    .from = {0},
+                    .from = "To-Do",
             };
-
-            size_t senderUsernameLength = strlen(senderUsername);
-            size_t maxCopyLength = sizeof(msg.from) - 1;  // Garante espaço para o caractere nulo
-            size_t copyLength = senderUsernameLength < maxCopyLength ? senderUsernameLength : maxCopyLength;
-
-            // Use strncpy para copiar a string
-            strncpy(msg.from, senderUsername, copyLength);
-
-            // Certifique-se de terminar a string com null
-            msg.from[copyLength] = '\0';
-
             strncpy(msg.message, message, MAX_MESSAGE_SIZE);
 
-            if (!writeMessage(userPipe, MessageTypeForPrivateMessage, &msg, sizeof(msg))) {
+//            size_t senderUsernameLength = strlen(senderUsername);
+//            size_t maxCopyLength = sizeof(msg.from) - 1;  // Garante espaço para o caractere nulo
+//            size_t copyLength = senderUsernameLength < maxCopyLength ? senderUsernameLength : maxCopyLength;
+//
+//            // Use strncpy para copiar a string
+//            strncpy(msg.from, senderUsername, copyLength);
+//
+//            // Certifique-se de terminar a string com null
+//            msg.from[copyLength] = '\0';
+
+
+            if (!writeMessage(userPipe, TextMsg, &msg, sizeof(msg))) {
                 executeCommand("ERRO ao enviar a mensagem para o destinatário.", window);
                 close(userPipe);
                 return NULL;

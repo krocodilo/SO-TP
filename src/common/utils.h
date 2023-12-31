@@ -25,10 +25,4 @@ int pipeIsSet(int pipeFd, fd_set * selectHandler);
 void copyMap(Map * to, Map * from);
 
 
-typedef struct {
-    int senderID;
-    int receiverID;
-    char message[MAX_MESSAGE_SIZE];
-} PrivateMessage;
-
 #endif //SO_TP_UTILS_H

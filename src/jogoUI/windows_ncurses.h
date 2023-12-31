@@ -61,7 +61,6 @@ typedef struct {
     WINDOW * notificationwin;
 } Windows;
 
-#define MessageTypeForPrivateMessage 42
 
 
 #endif //SO_TP_WINDOWS_NCURSES_H
