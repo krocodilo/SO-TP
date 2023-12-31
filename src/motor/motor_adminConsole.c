@@ -2,6 +2,7 @@
 
 
 void* mobileBlockThread(void* arg);
+bool positionIsStuck(Position pos, Map* map);
 
 
 void* commandsInputThread(void* arg) {
@@ -12,6 +13,7 @@ void* commandsInputThread(void* arg) {
 
     while( true ){
         printf("\n>  ");
+        fflush(stdout);
         fgets(command, sizeof(command), stdin);
         command[strcspn(command, "\n")] = '\0';  // Remove new line
 
@@ -30,6 +32,8 @@ void* commandsInputThread(void* arg) {
             char *targetName = strtok(NULL, " ");
 
             if (targetName != NULL) {
+
+                // todo kick
 
                 char *aux;
                 aux = (char *)malloc(strlen(targetName) + strlen(" banido") + 1);
@@ -55,24 +59,29 @@ void* commandsInputThread(void* arg) {
         }
 
         else if (strncmp(command, "bmov", 4) == 0) {
+            pthread_mutex_lock(&mutx->mBlocks);
 
             MobileBlockThreadArg mBlockArg = {
+                    .thisMBlock = &game->mBlocks[game->nMBlocks],
                     .players = game->players,
                     .nPlayers = &game->nPlayers,
                     .currentMap = &game->currentMap,
                     .mutexes = mutx
             };
-            pthread_create(&game->mBlocks[game->nMBlocks], NULL, mobileBlockThread, &mBlockArg );
+            pthread_create(&game->mBlocks[game->nMBlocks].threadId, NULL, mobileBlockThread, &mBlockArg );
             game->nMBlocks++;
+            pthread_mutex_unlock(&mutx->mBlocks);
         }
 
         else if (strncmp(command, "rbm", 3) == 0) {
-
-            if(game->nMBlocks == 0)
+            if(game->nMBlocks == 0){
+                printf("Nao existem Bloqueios Moveis para eliminar.\n");
                 continue;
+            }
 
-            pthread_kill(game->mBlocks[0], SIGTERM);
-//            int position =
+            pthread_mutex_lock(&mutx->mBlocks);
+            pthread_kill(game->mBlocks[0].threadId, SIGTERM);
+            Position pos = game->mBlocks[0].pos;
 
             for(int i = 1; i < game->nMBlocks; i++){
                 // If number of mobile blocks is more than 1, shift all back
@@ -80,14 +89,22 @@ void* commandsInputThread(void* arg) {
             }
             // If number of mobile blocks is only one, then simply decrease counter
             game->nMBlocks--;
+            pthread_mutex_unlock(&mutx->mBlocks);
+
+            // Update map
+            pthread_mutex_lock(&mutx->currentMap);
+            game->currentMap.cmap[pos.y][pos.x] = FREE_SPACE;
+            pthread_mutex_unlock(&mutx->currentMap);
 
             // Update clients
-//            ModifyMap removeMBlockMsg;
-
+            ModifyMapMessage removeMBlockMsg = {pos, CHAR_MBLOCKS};
+            broadcastMessageToPlayers(game->players, game->nPlayers, ModifyMap, &removeMBlockMsg,
+                                      sizeof(removeMBlockMsg), &mutx->players);
             printf("\nFoi eliminado o bloqueio movel mais antigo.\n");
         }
 
         else if (strncmp(command, "end", 3) == 0) {
+            pthread_kill(game->gameThreadId, SIGTERM);
             return NULL;
         }
         else
@@ -96,14 +113,16 @@ void* commandsInputThread(void* arg) {
 }
 
 
-//void mobileBlockThreadSignalHandler() {
-//
-//    return;
-//}
+void mobileBlockThreadSignalHandler() {
+    pthread_exit(NULL);
+}
 
 
 void* mobileBlockThread(void* arg) {
+    signal(SIGTERM, mobileBlockThreadSignalHandler);
+
     Map* currentMap = (Map *) ((MobileBlockThreadArg*) arg)->currentMap;
+    MBlock* thisMBlock = (MBlock *) ((MobileBlockThreadArg*) arg)->thisMBlock;
     Mutexes* mutx = (Mutexes *) ((MobileBlockThreadArg*) arg)->mutexes;
     Player* players = (Player *) ((MobileBlockThreadArg*) arg)->players;
     int* nPlayers = (int *) ((MobileBlockThreadArg*) arg)->nPlayers;
@@ -113,14 +132,13 @@ void* mobileBlockThread(void* arg) {
 
     srand48((unsigned int)time(NULL));
 
-//    signal(SIGTERM, mobileBlockThreadSignalHandler);
 
     // Initialize position
     pthread_mutex_lock(&mutx->currentMap);
     while(true) {
         pos.y = rand() % (MAP_LINES + 1);
         pos.x = rand() % (MAP_COLS + 1);
-        if( posIsValid(pos) && posIsFree(pos, currentMap) ) {
+        if( posIsValid(pos) && posIsFree(pos, currentMap) && !positionIsStuck(pos, currentMap) ) {
             break;
         }
     }
@@ -133,6 +151,7 @@ void* mobileBlockThread(void* arg) {
     broadcastMessageToPlayers(players, *nPlayers, ModifyMap, &initialMsg, sizeof(initialMsg), &mutx->players);
     printf("\nFoi inserido um novo bloqueio movel em y:%d x:%d.\n", pos.y, pos.x);
     fflush(stdout);
+
 
     while(true) {
         pthread_mutex_lock(&mutx->currentMap);
@@ -153,13 +172,14 @@ void* mobileBlockThread(void* arg) {
                 else
                     nextPos.y += 1;    // down
             }
-//            if( nextPos.x == pos.x && nextPos.x == pos.x )
-//                break;
+            if( nextPos.y == pos.y && nextPos.x == pos.x )
+                break;  // if it wants to go back (original position hasnt been cleared from the map)
         } while ( !posIsValid(nextPos) || !posIsFree(nextPos, currentMap) );
 
-        printf("\nNova coord bloqueio movel em y:%d x:%d.", nextPos.y, nextPos.x);
-        fflush(stdout);
+//        printf("\nNova coord bloqueio movel em y:%d x:%d.", nextPos.y, nextPos.x);
+//        fflush(stdout);
 
+        currentMap->cmap[pos.y][pos.x] = FREE_SPACE;
         currentMap->cmap[nextPos.y][nextPos.x] = CHAR_MBLOCKS;
         pthread_mutex_unlock(&mutx->currentMap);
 
@@ -169,6 +189,30 @@ void* mobileBlockThread(void* arg) {
         broadcastMessageToPlayers(players, *nPlayers, Move, &msg, sizeof(msg), &mutx->players);
 
         pos = nextPos;
+        pthread_mutex_lock(&mutx->mBlocks);
+        thisMBlock->pos = pos;
+        pthread_mutex_unlock(&mutx->mBlocks);
         sleep(1);
     }
+}
+
+bool positionIsStuck(Position pos, Map* map) {
+//    pthread_mutex_lock(mapMutex);
+    Position up, down, left, right;
+    up = down = left = right = pos;
+    up.y -= 1; down.y += 1;
+    left.x -= 1; right.x += 1;
+
+    bool isStuck = true;
+    if ( posIsValid(up) && posIsFree(up, map) )
+        isStuck = false;
+    else if ( posIsValid(down) && posIsFree(down, map) )
+        isStuck = false;
+    else if ( posIsValid(left) && posIsFree(left, map) )
+        isStuck = false;
+    else if ( posIsValid(right) && posIsFree(right, map) )
+        isStuck = false;
+
+//    pthread_mutex_unlock(mapMutex);
+    return isStuck;
 }

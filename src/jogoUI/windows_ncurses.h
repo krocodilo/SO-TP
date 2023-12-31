@@ -33,7 +33,7 @@ void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map m
 void pedras(WINDOW *win, int nRocks);
 void bloqueios(WINDOW *win, int nMBlocks);
 void nivel(WINDOW *win, int level);
-void jogadores(WINDOW *win, char *playersCommaSeparated);
+//void jogadores(WINDOW *win, char *playersCommaSeparated);
 
 void executeCommand(char *command,WINDOW *win);
 char* comandos(WINDOW * comandwin);

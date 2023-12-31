@@ -86,8 +86,10 @@ void receiveNewPlayer(Game* game){
 
     // If username already exists, means user restarted client app, so pipe and pid are different
     for(int i = 0; i < game->nPlayers; i++)
-        if(strncmp(game->players[i].username, msg.username, MAX_PLAYER_NAME) == 0)
+        if(strncmp(game->players[i].username, msg.username, MAX_PLAYER_NAME) == 0){
             newPlayer = &game->players[i];
+            game->nPlayers--;
+        }
 
     newPlayer->pipe = open(msg.pipePath, O_WRONLY);
     if (newPlayer->pipe == -1){ //se o pipe do cliente der erro a abrir!

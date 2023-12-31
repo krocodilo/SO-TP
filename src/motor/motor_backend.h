@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <ncurses.h>
+#include <signal.h>
 #include <pthread.h>
 
 #include "../common/utils.h"
@@ -18,8 +19,8 @@ bool posIsValid(Position pos);
 bool posIsFree(Position pos, Map *map);
 Position randomFreePosition(Map *map, pthread_mutex_t *mapMutex);
 
-
-
+void terminateAllMBlocks(MBlock mBlocks[], int *nMBlocks, pthread_mutex_t *mBlocksMutex);
+void terminateAllBots(Bot bots[], int *nBots, pthread_mutex_t *botsMutex);
 
 
 #endif //SO_TP_MOTOR_BACKEND_H

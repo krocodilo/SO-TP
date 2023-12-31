@@ -6,21 +6,16 @@
 #include "../common/common_data_structs.h"
 
 typedef struct {
-    int x, y;
-} MobileBlock;
-
-
-typedef struct {
-    int x, y, durationSeconds;
-} Rock;
-
-
-typedef struct {
     int id, period, duration;
     pthread_t threadId;
     pid_t pid;
     int pipe;
 } Bot;
+
+typedef struct {
+    pthread_t threadId;
+    Position pos;
+} MBlock;
 
 typedef struct {
     char symbol;
@@ -35,12 +30,13 @@ typedef struct {
     int nPlayers;
     Bot bots[MAX_BOTS];
     int nBots;
-    pthread_t mBlocks[MAX_MBLOCKS];
+    MBlock mBlocks[MAX_MBLOCKS];
     int nMBlocks;
     Map currentMap;
     int currentLevel;
     int generalPipe; // file descriptor for general pipe
     int nRocks;
+    pthread_t gameThreadId;
 } Game;
 
 
@@ -56,6 +52,7 @@ typedef struct {
     pthread_mutex_t currentMap;
     pthread_mutex_t players;
     pthread_mutex_t bots;
+    pthread_mutex_t mBlocks;
 } Mutexes;
 
 

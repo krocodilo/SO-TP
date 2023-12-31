@@ -24,6 +24,7 @@ typedef struct {
 
 
 typedef struct {
+    MBlock *thisMBlock;
     Map *currentMap;
     Mutexes* mutexes;
     Player* players;

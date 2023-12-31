@@ -28,9 +28,15 @@ int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
                 fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
                 break;
             }
-            // Execute move, if position is free
-            if( executeMoveRequest(player, currentMap, msg.arrowKey, game, mutx) == EXIT_SUCCESS ){
+            pthread_mutex_lock(&mutx->players);
+            Position playerPos = player->pos;
+            pthread_mutex_unlock(&mutx->players);
 
+            // Execute move, if position is free
+//            if( executeMoveRequest(player, currentMap, msg.arrowKey, game, mutx) == EXIT_SUCCESS ){
+
+            if (playerPos.y == 0 && msg.arrowKey == KEY_UP) {
+                // If player has won
                 TextMessage infoMsg;
                 strncpy(infoMsg.from, "Motor", MAX_PLAYER_NAME-1);
 
@@ -43,6 +49,7 @@ int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
                                           sizeof(infoMsg), &mutx->players);
                 return 1;
             }
+            executeMoveRequest(player, currentMap, msg.arrowKey, game, mutx);
             break;
         }
         case GetPlayersList: {
@@ -56,7 +63,6 @@ int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
                 fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
                 break;
             }
-
             PlayersListMessage plMsg;
             pthread_mutex_lock(&mutx->players);
 
@@ -107,7 +113,7 @@ int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
             }
             break;
         }
-        case SignUpSuccessful:{
+        case SignUp:{
             SignUpMessage msg;
             readNextMessage(game->generalPipe, &msg, sizeof(msg));
             // ignore
@@ -244,4 +250,34 @@ Position randomFreePosition(Map *map, pthread_mutex_t *mapMutex) {
     }
     pthread_mutex_unlock(mapMutex);
     return pos;
+}
+
+void terminateAllMBlocks(MBlock mBlocks[], int *nMBlocks, pthread_mutex_t *mBlocksMutex) {
+//    printf("Terminating mblocks\n");
+//    fflush(stdout);
+    pthread_mutex_lock(mBlocksMutex);
+    for(int i = 0; i < *nMBlocks; i++)
+        pthread_kill(mBlocks[i].threadId, SIGTERM);
+    for(int i = 0; i < *nMBlocks; i++)
+        pthread_join(mBlocks[i].threadId, NULL);
+    *nMBlocks = 0;
+    pthread_mutex_unlock(mBlocksMutex);
+}
+
+void terminateAllBots(Bot bots[], int *nBots, pthread_mutex_t *botsMutex) {
+    printf("Terminating bots\n");
+    fflush(stdout);
+    pthread_mutex_lock(botsMutex);
+    for(int i = 0; i < *nBots; i++){
+        pthread_kill(bots[i].threadId, SIGTERM);
+        kill(bots[i].pid, SIGINT);
+    }
+    printf("-2-\n");
+    fflush(stdout);
+    for(int i = 0; i < *nBots; i++)
+        pthread_join(bots[i].threadId, NULL);
+    *nBots = 0;
+    printf("-3-\n");
+    fflush(stdout);
+    pthread_mutex_unlock(botsMutex);
 }

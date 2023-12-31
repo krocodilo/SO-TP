@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <unistd.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <string.h>
 #include <time.h>
-#include <ctype.h>
 #include <pthread.h>
 
 #include "../common/constants.h"
@@ -15,27 +11,23 @@
 #include "motor_signup.h"
 #include "motor_init.h"
 #include "motor_game.h"
-#include "motor_bots.h"
 #include "motor_adminConsole.h"
 
 
 Game* game;
-Map currentMap[MAX_LEVELS];
+Map allMaps[MAX_LEVELS];
+Mutexes mutexes;
 
 
 void terminate(int exitcode){
+    printf("\nTerminating...  ");
     fflush(stdout);
-    printf("\nTerminating...\n");
 
-    // wait for all threads to join
+    // todo warn all players
 
-    // Terminate all bots
-    for( ;game->nBots > 0; game->nBots-- ){
-        kill(game->bots[game->nBots-1].pid, SIGINT);
-//        wait(???); // esperar que os bots terminem
-    }
+    // todo wait for all threads to join ?
 
-    // when using mutexes, wait to lock and then unlock
+    pthread_kill(game->gameThreadId, SIGTERM);
 
     // Close general pipe
     if(game->generalPipe > 0)
@@ -43,11 +35,15 @@ void terminate(int exitcode){
     unlink(GENERAL_PIPE);
 
     // Close client pipes
+    for(int i = 0; i < game->nPlayers; i++)
+        close(game->players[i].pipe);
 
     free(game);
+    printf("Terminated successfully!\n");
     fflush(stdout);
     exit(exitcode);
 }
+
 
 
 int main(int argc, char *argv[]) {
@@ -57,42 +53,8 @@ int main(int argc, char *argv[]) {
     srand((unsigned int)time(NULL));
 
 
-//    Map map;
-//    Position pos = {1,1};
-//    int it = 0;
-////    for(; it < 30; it++){
-////        printf("%d\n", drand48() < 0.5);
-////    }
-//    do {
-//        // chose horizontal or vertical direction:
-//        if(drand48() < 0.5){
-//            // if horizontal
-//            if(drand48() < 0.5)
-//                pos.x -= 1;    // left
-//            else
-//                pos.x += 1;    // right
-//        }
-//        else{
-//            // if vertical
-//            if(drand48() < 0.5)
-//                pos.y -= 1;    // up
-//            else
-//                pos.y += 1;    // down
-//        }
-//        printf("y:%d\tx:%d\n", pos.y, pos.x);
-//        fflush(stdout);
-//        it++;
-//    } while ((!posIsValid(pos) ) && it < 30);
-//    printf("yoyoyo\n");
-//
-//
-//    exit(1);
-
-
-
-
     // Read all currentMap
-    if(readMapFiles(currentMap) == EXIT_FAILURE )
+    if(readMapFiles(allMaps) == EXIT_FAILURE )
         return EXIT_FAILURE;
 
     // Initialize Game Structure
@@ -125,10 +87,10 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize mutexes
-    Mutexes mutexes;
     pthread_mutex_init(&mutexes.currentMap, NULL);
     pthread_mutex_init(&mutexes.players, NULL);
     pthread_mutex_init(&mutexes.bots, NULL);
+    pthread_mutex_init(&mutexes.mBlocks, NULL);
 
     while(true){
         if( waitForClientsSignUp(gameSettings, game) == EXIT_FAILURE) {
@@ -138,12 +100,11 @@ int main(int argc, char *argv[]) {
         // Start game thread
         GameThreadArg gameArgs = {
                 .game = game,
-                .maps = currentMap,
+                .maps = allMaps,
                 .settings = &gameSettings,
                 .mutexes = &mutexes
         };
-        pthread_t gameThreadId;
-        pthread_create(&gameThreadId, NULL, gameThread, &gameArgs );
+        pthread_create(&game->gameThreadId, NULL, gameThread, &gameArgs );
 
         // Start admin console thread
 
@@ -154,7 +115,7 @@ int main(int argc, char *argv[]) {
         pthread_t consoleThreadId;
         pthread_create(&consoleThreadId, NULL, commandsInputThread, &consoleArgs );
 
-        pthread_join(gameThreadId, NULL);
+        pthread_join(game->gameThreadId, NULL);
 
         // end commands thread
         pthread_kill(consoleThreadId, SIGTERM);
@@ -162,8 +123,8 @@ int main(int argc, char *argv[]) {
 
         printf("\n\nA iniciar nova ronda!\n");
         resetGame(game);
+        flushPipe(game->generalPipe);
     }
-
     terminate(0);
     return 0;
 }

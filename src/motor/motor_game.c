@@ -31,6 +31,17 @@ void broadcastNewMap(int currentLevel, Player *players, int nPlayers, Map * curr
 }
 
 
+Game *signalHandlerGame;
+Mutexes *signalHandlerMutexes;
+
+void terminateGame() {
+
+    terminateAllMBlocks(signalHandlerGame->mBlocks, &signalHandlerGame->nMBlocks, &signalHandlerMutexes->mBlocks);
+    terminateAllBots(signalHandlerGame->bots, &signalHandlerGame->nBots, &signalHandlerMutexes->bots);
+    pthread_exit(NULL);
+}
+
+
 // Game Logic
 void* gameThread(void* arg) {
     // Parse arguments into local pointers
@@ -38,6 +49,9 @@ void* gameThread(void* arg) {
     Map* allMaps = (Map*) ((GameThreadArg*) arg)->maps;
     GameSettings* settings = (GameSettings*) ((GameThreadArg*) arg)->settings;
     Mutexes* mutx = (Mutexes*) ((GameThreadArg*) arg)->mutexes;
+
+    signal(SIGTERM, terminateGame);
+    signalHandlerGame = game; signalHandlerMutexes = mutx;
 
     // Select variables
     struct timeval waitTime = {.tv_sec = -1};
@@ -70,30 +84,39 @@ void* gameThread(void* arg) {
         // Start game logic
         printf("Motor esta a escuta de mensagens...\n");
         bool levelIsWon = false;
+
+        // todo flush pipe?
+
         while( gameIsRunning && !levelIsWon ) {
 //            printf("Time left: %ld\n", waitTime.tv_sec);
             if( selectPipe(&selectHandler, pipesToWatch, 1, &waitTime) == 0) {
                 // Level Timeout
                 printf("Level timeout.\n");
+
+                // todo send message
+
                 break;
             }
             if(pipeIsSet(game->generalPipe, &selectHandler)) {
                 // If there's something to read
                 switch( handleNewGameMessage(game, currentMap, mutx) ) {
                     case 1:
+                        printf("A player won this level.\n");
                         levelIsWon = true;
                         continue;
                     case -1:
+                        printf("There are no more players in this game.\n");
                         gameIsRunning = false;
                         continue;
                 }
             }
         }
+        terminateAllMBlocks(game->mBlocks, &game->nMBlocks, &mutx->mBlocks);
+        terminateAllBots(game->bots, &game->nBots, &mutx->bots);
 
-        // TODO kill bots
         game->currentLevel++;
     }
-            sleep(100000000);               // TODO !!!!!!!!!!!!!!!!!!!
-        printf("!!! STOPPED WAITING !!!!");
-    return NULL;
+    // todo warn all players
+
+    terminateGame();
 }

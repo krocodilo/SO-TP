@@ -93,3 +93,11 @@ void copyMap(Map * to, Map * from) {
         for(int c = 0; c < MAP_COLS; c++)
             to->cmap[l][c] = from->cmap[l][c];
 }
+
+
+void flushPipe(int pipe_fd) {
+    char buffer[BUFSIZE];
+    while( read(pipe_fd, buffer, BUFSIZE) > 0 ){
+
+    }
+}

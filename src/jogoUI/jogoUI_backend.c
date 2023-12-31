@@ -70,6 +70,7 @@ void* communicationsThread(void* arg) {
                     executeCommand("Erro ao ler a proxima mensagem no pipe.", windows->notificationwin);
                     break;
                 }
+                executeCommand("Erro ao ler a proxima mensagem no pipe.", windows->notificationwin);
                 int stringSize = (msg.nPlayers*MAX_PLAYER_NAME) + (msg.nPlayers*2) + 1;
                                 //  size of all usernames  +  commas and spaces  +  /0
                 char commaSeparatedList[stringSize];
@@ -78,7 +79,7 @@ void* communicationsThread(void* arg) {
                     sprintf(commaSeparatedList, "%s, %s", commaSeparatedList, msg.players[i]);
 
                 // Print list in window
-                jogadores(windows->jogadoreswin, commaSeparatedList);
+                executeCommand(commaSeparatedList, windows->notificationwin);
                 break;
             }
             case TextMsg: {
@@ -89,7 +90,7 @@ void* communicationsThread(void* arg) {
                 }
                 char string[MAX_MESSAGE_SIZE*2];
                 sprintf(string, "New message from '%s':\n", msg.from);
-                sprintf(string, "%s", msg.message);
+                strcat(string, msg.message);
 
                 executeCommand(string, windows->notificationwin);
                 break;

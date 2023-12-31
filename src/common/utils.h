@@ -24,5 +24,6 @@ int pipeIsSet(int pipeFd, fd_set * selectHandler);
 
 void copyMap(Map * to, Map * from);
 
+void flushPipe(int pipe_fd)
 
 #endif //SO_TP_UTILS_H

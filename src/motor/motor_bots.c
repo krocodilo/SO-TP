@@ -2,7 +2,13 @@
 
 
 
+void botThreadSignalHandler() {
+    pthread_exit(NULL);
+}
+
+
 void* botThread(void * arg) {
+    signal(SIGTERM, botThreadSignalHandler);
     // Parse arguments into local pointers
 //    Bot *bot = (Bot *) ((BotThreadArg *) arg)->thisBot;
     int botId = (int) ((BotThreadArg *) arg)->botId;

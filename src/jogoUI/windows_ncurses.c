@@ -111,26 +111,26 @@ void nivel(WINDOW *win, int level) {
 }
 
 //mostra nome de jogadores no mapa numa janela *não é utilizado
-void jogadores(WINDOW *win, char *playersCommaSeparated) {
-
-    box(win,0,0);
-
-    start_color();
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(2, COLOR_CYAN, COLOR_BLACK);
-    init_color(COLOR_CYAN,0-999,0-999,0-999);
-
-    wattron(win,COLOR_PAIR(1));
-    mvwprintw(win, 1,1,"Jogadores:");
-    wattroff(win,COLOR_PAIR(1));
-
-    wattron(win,COLOR_PAIR(2));
-    mvwprintw(win, 1, 12, "%s", playersCommaSeparated);
-    wattroff(win,COLOR_PAIR(2));
-
-    refresh();
-    wrefresh(win);
-}
+//void jogadores(WINDOW *win, char *playersCommaSeparated) {
+//
+//    box(win,0,0);
+//
+//    start_color();
+//    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+//    init_pair(2, COLOR_CYAN, COLOR_BLACK);
+//    init_color(COLOR_CYAN,0-999,0-999,0-999);
+//
+//    wattron(win,COLOR_PAIR(1));
+//    mvwprintw(win, 1,1,"Jogadores:");
+//    wattroff(win,COLOR_PAIR(1));
+//
+//    wattron(win,COLOR_PAIR(2));
+//    mvwprintw(win, 1, 12, "%s", playersCommaSeparated);
+//    wattroff(win,COLOR_PAIR(2));
+//
+//    refresh();
+//    wrefresh(win);
+//}
 
 //mostra O COMANDO ACIONADO
 void executeCommand(char *command,WINDOW *win) {
@@ -206,9 +206,9 @@ WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const cha
 
 
     if (strncmp(command, "players", 7) == 0) {
-//        executeCommand(command,centeredWin);
-        int msg = GetPlayersList;
-        write(generalPipe, &msg, sizeof(int));
+        GenericRequestMessage msg = {getpid()};
+        if( ! writeMessage(generalPipe, GetPlayersList, &msg, sizeof(msg)) )
+            executeCommand("Erro ao enviar mensagem para pipe do motor.", window);
     }
 
     else if (strncmp(command, "msg", 3) == 0) {
@@ -229,21 +229,9 @@ WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const cha
                 return NULL;
             }
 
-            TextMessage msg = {
-                    .from = "To-Do",
-            };
+            TextMessage msg;
+            strncpy(msg.from, senderUsername, MAX_PLAYER_NAME);
             strncpy(msg.message, message, MAX_MESSAGE_SIZE);
-
-//            size_t senderUsernameLength = strlen(senderUsername);
-//            size_t maxCopyLength = sizeof(msg.from) - 1;  // Garante espaço para o caractere nulo
-//            size_t copyLength = senderUsernameLength < maxCopyLength ? senderUsernameLength : maxCopyLength;
-//
-//            // Use strncpy para copiar a string
-//            strncpy(msg.from, senderUsername, copyLength);
-//
-//            // Certifique-se de terminar a string com null
-//            msg.from[copyLength] = '\0';
-
 
             if (!writeMessage(userPipe, TextMsg, &msg, sizeof(msg))) {
                 executeCommand("ERRO ao enviar a mensagem para o destinatário.", window);
