@@ -153,7 +153,12 @@ void* mobileBlockThread(void* arg) {
                 else
                     nextPos.y += 1;    // down
             }
+//            if( nextPos.x == pos.x && nextPos.x == pos.x )
+//                break;
         } while ( !posIsValid(nextPos) || !posIsFree(nextPos, currentMap) );
+
+        printf("\nNova coord bloqueio movel em y:%d x:%d.", nextPos.y, nextPos.x);
+        fflush(stdout);
 
         currentMap->cmap[nextPos.y][nextPos.x] = CHAR_MBLOCKS;
         pthread_mutex_unlock(&mutx->currentMap);

@@ -20,7 +20,7 @@
 
 
 Game* game;
-Map allMaps[MAX_LEVELS];
+Map currentMap[MAX_LEVELS];
 
 
 void terminate(int exitcode){
@@ -91,8 +91,8 @@ int main(int argc, char *argv[]) {
 
 
 
-    // Read all allMaps
-    if(readMapFiles(allMaps) == EXIT_FAILURE )
+    // Read all currentMap
+    if(readMapFiles(currentMap) == EXIT_FAILURE )
         return EXIT_FAILURE;
 
     // Initialize Game Structure
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
         // Start game thread
         GameThreadArg gameArgs = {
                 .game = game,
-                .maps = allMaps,
+                .maps = currentMap,
                 .settings = &gameSettings,
                 .mutexes = &mutexes
         };

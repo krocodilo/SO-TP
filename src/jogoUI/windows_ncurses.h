@@ -38,10 +38,10 @@ void bloqueios(WINDOW *win, int nMBlocks);
 void nivel(WINDOW *win, int level);
 void jogadores(WINDOW *win, char *playersCommaSeparated);
 
-void executeCommand(char *command,WINDOW *win, int height, int width);
+void executeCommand(char *command,WINDOW *win);
 char* comandos(WINDOW * comandwin);
 void comandos2(WINDOW * comandwin);
-WINDOW* processCommand(char *command, WINDOW *centeredWin, int generalPipe);
+WINDOW* processCommand(char *command, WINDOW *window, int generalPipe);
 
 void drawCharacter(WINDOW *win, Character character);
 void clearCharacter(WINDOW *win, Character character);

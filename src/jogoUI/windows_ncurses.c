@@ -255,7 +255,7 @@ void jogadores(WINDOW *win, char *playersCommaSeparated) {
 }
 
 //mostra O COMANDO ACIONADO
-void executeCommand(char *command,WINDOW *win, int height, int width) {
+void executeCommand(char *command,WINDOW *win) {
 
     echo();
 
@@ -278,7 +278,7 @@ void executeCommand(char *command,WINDOW *win, int height, int width) {
 //modo escrita de comando
 char* comandos(WINDOW * comandwin){
     curs_set(1);
-    char comando[MAX_COMMAND_LENGTH];
+    char comando[MAX_COMMAND_LENGTH + MAX_MESSAGE_SIZE];
 
     echo();
 
@@ -324,31 +324,41 @@ void comandos2(WINDOW * comandwin){
 }
 
 // Função para processar comandos do jogador
-WINDOW* processCommand(char *command,WINDOW * comando, int generalPipe) {
+WINDOW* processCommand(char *command, WINDOW * window, int generalPipe) {
 
-    WINDOW *centeredWin;
 
     if (strncmp(command, "players", 7) == 0) {
-        /*
-        printf("Lista de Jogadores:\n");
-        for (int i = 0; i < game->nPlayers; i++) {
-            printf("- %s\n", game->players[i].name);
-        }*/
-        executeCommand(command,centeredWin, 0, 0);
-
+//        executeCommand(command,centeredWin);
         int msg = GetPlayersList;
         write(generalPipe, &msg, sizeof(int));
-    }else
+    }
 
-    if (strncmp(command, "msg", 3) == 0) {
-        char* cmdCopy = strdup(command);    // apenas para meta 1
-
+    else if (strncmp(command, "msg", 3) == 0) {
 
         char *cmd = strtok(command, " ");
         char *targetName = strtok(NULL, " ");
         char *message = strtok(NULL, "");
 
         if (targetName != NULL && message != NULL) {
+
+            char userPipeName[PIPE_PATH_MAX_SIZE];
+            strcpy(userPipeName, PIPE_DIRECTORY);
+            strcat(userPipeName, targetName);
+
+            int userPipe = open(GENERAL_PIPE, O_WRONLY);
+            if (userPipe == -1){
+                perror("\nERRO ao tentar abrir o pipe do utilizador.\n");
+                return NULL;
+            }
+
+            TextMessage msg = {
+                .from = "TO-DO" // TODO
+            };
+            strncpy(msg.message, message, MAX_MESSAGE_SIZE);
+
+            write(userPipe, &msg, sizeof(msg));
+            close(userPipe);
+
             /*
            // Validar se o nome do destinatário existe
             if (validatePlayerName(game->players, game->nPlayers, targetName)) {
@@ -356,15 +366,12 @@ WINDOW* processCommand(char *command,WINDOW * comando, int generalPipe) {
             } else {
                 mvprintw(12, 0, "Erro: Utilizador %s não encontrado.", targetName);
             }*/
-            executeCommand(cmdCopy,centeredWin, 0, 0);
         }
         else
-        {
-            executeCommand("msg <nome_utilizador> <mensagem>",centeredWin, 0, 0);
-        }
+            executeCommand("SINTAXE: msg <nome_utilizador> <mensagem>", window);
     }
-    else
-    if (strcmp(command, "exit") == 0) {
+
+    else if (strcmp(command, "exit") == 0) {
 
         endwin();
         exit(0);
@@ -372,11 +379,10 @@ WINDOW* processCommand(char *command,WINDOW * comando, int generalPipe) {
 
     else
     {
-        executeCommand("Comando invalido!",centeredWin, 0, 0);
+        executeCommand("Comando invalido!", window);
     }
 
     return 0;
-
 }
 
 // Função para desenhar o personagem na janela

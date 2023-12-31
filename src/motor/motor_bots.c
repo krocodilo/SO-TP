@@ -100,7 +100,7 @@ int executeBot(Bot *bot, int period, int duration) {
 void runBots(Game *game, Map *currentMap, Mutexes *mutexes) {
     // Execute bots according to game level
 
-    int period = 5, duration =3;    // todo
+    int period = 10, duration =8;    // todo
 //    int period = 30, duration = 5 + (game->currentLevel * 5);
 
     pthread_mutex_lock(&mutexes->bots);

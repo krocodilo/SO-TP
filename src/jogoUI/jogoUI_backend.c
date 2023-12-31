@@ -30,15 +30,6 @@ void* communicationsThread(void* arg) {
                     perror("\nErro ao ler a proxima mensagem no pipe.");
                     break;
                 }
-                // Check if it's a mobile block
-                if( map->cmap[msg.from.y][msg.from.x] == CHAR_MBLOCKS ){
-                    nMBlocks--;     // if its going to clear a mobile block
-                    bloqueios(windows->bloqueioswin, nMBlocks);
-                }
-                else if (msg.symbol == CHAR_MBLOCKS ){
-                    nMBlocks++;     // if its going to add a mobile block
-                    bloqueios(windows->bloqueioswin, nMBlocks);
-                }
 
                 map->cmap[msg.from.y][msg.from.x] = FREE_SPACE;
                 map->cmap[msg.to.y][msg.to.x] = msg.symbol;
@@ -93,7 +84,16 @@ void* communicationsThread(void* arg) {
                 break;
             }
             case TextMsg: {
+                TextMessage msg;
+                if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
+                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    break;
+                }
+                char string[MAX_MESSAGE_SIZE*2];
+                sprintf(string, "New message from '%s':\n", msg.from);
+                sprintf(string, "%s", msg.message);
 
+                executeCommand(string, windows->notificationwin);
                 break;
             }
             case Terminate: {

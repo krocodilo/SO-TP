@@ -5,7 +5,7 @@
 
 
 SignUpMessage userInfo;
-Map allMaps;
+Map currentMap;
 
 
 void terminate(int exitcode){
@@ -20,9 +20,6 @@ void terminate(int exitcode){
 
 // Função para controlo de teclas
 void controloTeclas(Windows* windows, int generalPipe) {
-//    keypad(stdscr, TRUE);
-
-    //newwin(limiteY, limiteX, startY, startX);
 
     windows-> mapawin = newwin(18,81,0,1);
     windows-> nivelwin = newwin(3,15,18,1);
@@ -32,16 +29,15 @@ void controloTeclas(Windows* windows, int generalPipe) {
     windows-> notificationwin = newwin(9,65,18,17);
 
 
-
-    mostraMapa(windows->mapawin, 18, 81, NULL, allMaps);
+    mostraMapa(windows->mapawin, 18, 81, NULL, currentMap);
     nivel(windows->nivelwin, 0);
     bloqueios(windows->bloqueioswin, 0);
     pedras(windows->pedraswin, 0);
-    executeCommand(" ",windows->notificationwin, 0, 0);
+    executeCommand(" ",windows->notificationwin);
+    comandos2(windows->Commandwin);
+
     char *command;
 
-    comandos2(windows->Commandwin);
-   
     int ch;
     int exitRequested = 0;
     while ((ch = getch()) != 'q') {
@@ -55,7 +51,7 @@ void controloTeclas(Windows* windows, int generalPipe) {
                 break;
             }
             case ' ': {
-                // Se estiver no modo de comando, execute o comando
+                // Se estiver no modo de comando, executa o comando
                 command = comandos(windows->Commandwin);
                 processCommand(command, windows->Commandwin, generalPipe);
                 free(command);
@@ -125,26 +121,10 @@ int main(int argc, char *argv[]) {
         terminate(EXIT_FAILURE);
     }
 
-//    switch (readNextMessageType(myPipe)) {
-//        case NewLevel: {
-//            NewLevelMessage msg;
-//            if( ! readNextMessage(myPipe, &msg, sizeof(msg)) ){
-//                perror("\nErro ao ler a proxima mensagem no pipe.");
-//                break;
-//            }
-////            memcpy(&allMaps, &msg.allMaps, sizeof(Map));
-//            copyMap(&allMaps, &msg.allMaps);
-//            break;
-//        }
-//        default:
-//            perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
-//            terminate(1);
-//    }
-
     // Start listening to messages from motor
     CommunicationsThreadArg arg = {
             .myPipe = myPipe,
-            .map = &allMaps,
+            .map = &currentMap,
             .windows = &windows
     };
     pthread_t id;

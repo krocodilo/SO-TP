@@ -9,7 +9,7 @@
 
 # Linker output
 *.ilk
-*.allMaps
+*.currentMap
 *.exp
 
 # Precompiled Headers
