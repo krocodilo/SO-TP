@@ -1,7 +1,5 @@
 #include "jogoUI_backend.h"
 
-
-
 void* communicationsThread(void* arg) {
     int myPipe = (int) ((CommunicationsThreadArg*) arg)->myPipe;
     Map * map = (Map*) ((CommunicationsThreadArg*) arg)->map;
@@ -15,7 +13,7 @@ void* communicationsThread(void* arg) {
             case NewLevel: {
                 NewLevelMessage msg;
                 if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
-                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    executeCommand("Erro ao ler a proxima mensagem no pipe.", windows->notificationwin);
                     break;
                 }
                 copyMap(map, &msg.map);
@@ -27,7 +25,7 @@ void* communicationsThread(void* arg) {
             case Move: {
                 MoveMessage msg;
                 if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
-                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    executeCommand("Erro ao ler a proxima mensagem no pipe.", windows->notificationwin);
                     break;
                 }
 
@@ -39,7 +37,7 @@ void* communicationsThread(void* arg) {
             case ModifyMap: {
                 ModifyMapMessage msg;
                 if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
-                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    executeCommand("Erro ao ler a proxima mensagem no pipe.", windows->notificationwin);
                     break;
                 }
                 // Check if its going to add or remove a rock or mobile block
@@ -69,7 +67,7 @@ void* communicationsThread(void* arg) {
             case PlayersList: {
                 PlayersListMessage msg;
                 if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
-                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    executeCommand("Erro ao ler a proxima mensagem no pipe.", windows->notificationwin);
                     break;
                 }
                 int stringSize = (msg.nPlayers*MAX_PLAYER_NAME) + (msg.nPlayers*2) + 1;
@@ -86,7 +84,7 @@ void* communicationsThread(void* arg) {
             case TextMsg: {
                 TextMessage msg;
                 if ( ! readNextMessage(myPipe, &msg, sizeof(msg)) ) {
-                    perror("\nErro ao ler a proxima mensagem no pipe.");
+                    executeCommand("Erro ao ler a proxima mensagem no pipe.", windows->notificationwin);
                     break;
                 }
                 char string[MAX_MESSAGE_SIZE*2];
@@ -101,7 +99,7 @@ void* communicationsThread(void* arg) {
                 break;
             }
             default:
-                perror("\nErro ao ler o tipo da proxima mensagem no pipe. Tipo irreconhecível.");
+                executeCommand("Erro ao ler o tipo da proxima mensagem no pipe. Tipo irreconhecível.", windows->notificationwin);
         }
     }
 
