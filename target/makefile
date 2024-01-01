@@ -4,7 +4,7 @@ jogoUI_dir = ../src/jogoUI
 common_dir = ../src/common
 
 
-all: motor jogoUI jogoUI2
+all: motor jogoUI
 
 motor: bot utils.o $(motor_dir)/* $(common_dir)/*
 	gcc -c $(motor_dir)/motor_init.c -o motor_init.o
