@@ -4,18 +4,10 @@
 #include "jogoUI_backend.h"
 
 
-SignUpMessage userInfo;
 Map currentMap;
 
 
-void terminate(int exitcode){
-    printf("\nTerminating...\n");
 
-    unlink(userInfo.pipePath);
-    endwin();
-    fflush(stdout);
-    exit(exitcode);
-}
 
 
 // Função para controlo de teclas
@@ -60,6 +52,7 @@ void controloTeclas(Windows* windows, int generalPipe) {
             }
         }
     }
+    terminate(EXIT_SUCCESS);
 }
 
 

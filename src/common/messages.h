@@ -12,7 +12,7 @@ enum MessageTypes {
     Move,
     ModifyMap,
     PlayersList,
-    Terminate,          // Sends GenericMessage
+    Terminate,          // Sends TextMessage before
 
 
     // Sent by jogoUI:

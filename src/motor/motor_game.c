@@ -58,6 +58,7 @@ void* gameThread(void* arg) {
     int pipesToWatch[1] = {game->generalPipe};
     fd_set selectHandler;
 
+    TextMessage infoMsg = {.from = "Motor"};
     Map* currentMap = &game->currentMap;
     int levelDuration = settings->firstLevelDurationSeconds;
 
@@ -72,40 +73,38 @@ void* gameThread(void* arg) {
         // Initialize player positions in current map
         initializePlayerPositions(game->players, game->nPlayers, currentMap, mutx);
 
+        // Run bot threads
+        runBots(game, currentMap, mutx);
+
         // Send new map
         broadcastNewMap(game->currentLevel, game->players, game->nPlayers, currentMap, mutx);
         printf("Novo mapa foi enviado aos jogadores.\n");
 
-        // Run bot threads
-        runBots(game, currentMap, mutx);
-
-        waitTime.tv_sec = levelDuration;    // Set level timeout
-
         // Start game logic
-        printf("Motor esta a escuta de mensagens...\n");
         bool levelIsWon = false;
-
-        // todo flush pipe?
-
+        waitTime.tv_sec = levelDuration;    // Set level timeout
+        printf("Motor esta a escuta de mensagens...\n");
+        flushPipe(game->generalPipe);
         while( gameIsRunning && !levelIsWon ) {
 //            printf("Time left: %ld\n", waitTime.tv_sec);
             if( selectPipe(&selectHandler, pipesToWatch, 1, &waitTime) == 0) {
                 // Level Timeout
-                printf("Level timeout.\n");
+                printf("O nivel %d chegou ao tempo limite.\n", game->currentLevel);
 
-                // todo send message
-
+                char string[MAX_MESSAGE_SIZE];
+                snprintf(infoMsg.message, MAX_MESSAGE_SIZE, "O nivel %d chegou ao tempo limite.", game->currentLevel);
+                broadcastMessageToPlayers(game->players, game->nPlayers, TextMsg, &infoMsg, sizeof(infoMsg), &mutx->players);
                 break;
             }
             if(pipeIsSet(game->generalPipe, &selectHandler)) {
                 // If there's something to read
                 switch( handleNewGameMessage(game, currentMap, mutx) ) {
                     case 1:
-                        printf("A player won this level.\n");
+                        printf("Um jogador ganhou este nivel.\n");
                         levelIsWon = true;
                         continue;
                     case -1:
-                        printf("There are no more players in this game.\n");
+                        printf("Nao existem mais jogadores.\n");
                         gameIsRunning = false;
                         continue;
                 }

@@ -11,6 +11,7 @@ void resetGame(Game* game) {
     game->currentLevel = 1;
     game->generalPipe = -1;
     game->nRocks = 0;
+    game->gameThreadId = pthread_self();
 }
 
 

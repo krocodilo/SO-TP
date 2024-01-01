@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "data_structs.h"
 

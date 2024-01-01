@@ -272,12 +272,26 @@ void terminateAllBots(Bot bots[], int *nBots, pthread_mutex_t *botsMutex) {
         pthread_kill(bots[i].threadId, SIGTERM);
         kill(bots[i].pid, SIGINT);
     }
-    printf("-2-\n");
-    fflush(stdout);
     for(int i = 0; i < *nBots; i++)
         pthread_join(bots[i].threadId, NULL);
     *nBots = 0;
-    printf("-3-\n");
-    fflush(stdout);
     pthread_mutex_unlock(botsMutex);
+}
+
+void terminateAllPlayers(Player players[], int *nPlayers, pthread_mutex_t *playersMutex, char *message) {
+    TextMessage msg = {
+            .from = "Motor"
+    };
+    strncpy(msg.message, message, MAX_MESSAGE_SIZE);
+    broadcastMessageToPlayers(players, *nPlayers, TextMsg, &msg, sizeof(msg), playersMutex);
+
+    int terminateMsgType = Terminate;
+    pthread_mutex_lock(playersMutex);
+    for(int i = 0; i < *nPlayers; i++)
+
+        if( write(players[i].pipe, &terminateMsgType, sizeof(int)) != sizeof(int) )
+            fprintf(stderr, "Erro ao enviar mensagem #%d para %s.", terminateMsgType, players[i].username);
+
+    *nPlayers = 0;
+    pthread_mutex_unlock(playersMutex);
 }

@@ -96,8 +96,9 @@ void copyMap(Map * to, Map * from) {
 
 
 void flushPipe(int pipe_fd) {
-    char buffer[BUFSIZE];
-    while( read(pipe_fd, buffer, BUFSIZE) > 0 ){
-
-    }
+    char buffer[BUFSIZ];
+    if( write(pipe_fd, 1, sizeof(int)) != sizeof(int) )
+        return;
+    while( read(pipe_fd, buffer, BUFSIZ) == BUFSIZ )
+        continue;
 }

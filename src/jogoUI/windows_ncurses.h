@@ -27,6 +27,7 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 3
 
+void terminate(int exitcode);
 void destroy_win(WINDOW *local_win);
 
 void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map);
@@ -60,6 +61,8 @@ typedef struct {
     WINDOW * Commandwin;
     WINDOW * notificationwin;
 } Windows;
+
+SignUpMessage userInfo;
 
 
 

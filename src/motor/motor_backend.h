@@ -21,6 +21,7 @@ Position randomFreePosition(Map *map, pthread_mutex_t *mapMutex);
 
 void terminateAllMBlocks(MBlock mBlocks[], int *nMBlocks, pthread_mutex_t *mBlocksMutex);
 void terminateAllBots(Bot bots[], int *nBots, pthread_mutex_t *botsMutex);
+void terminateAllPlayers(Player players[], int *nPlayers, pthread_mutex_t *playersMutex, char *message);
 
 
 #endif //SO_TP_MOTOR_BACKEND_H

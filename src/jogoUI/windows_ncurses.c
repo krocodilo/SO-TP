@@ -1,5 +1,16 @@
 #include "windows_ncurses.h"
 
+
+void terminate(int exitcode) {
+    endwin();
+    printf("\nTerminating...\n");
+
+    unlink(userInfo.pipePath);
+    fflush(stdout);
+    exit(exitcode);
+}
+
+
 //apaga window
 void destroy_win(WINDOW *local_win){
     wborder (local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
@@ -253,9 +264,7 @@ WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const cha
     }
 
     else if (strcmp(command, "exit") == 0) {
-
-        endwin();
-        exit(0);
+        terminate(EXIT_SUCCESS);
     }
 
     else

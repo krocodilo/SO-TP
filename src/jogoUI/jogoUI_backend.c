@@ -97,6 +97,7 @@ void* communicationsThread(void* arg) {
             }
             case Terminate: {
                 running = false;
+//                terminate(EXIT_SUCCESS);
                 break;
             }
             default:

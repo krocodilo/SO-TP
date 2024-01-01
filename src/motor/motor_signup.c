@@ -149,7 +149,6 @@ int readSignupCommands(Game* game) {
     }
     else if (strncmp(command, "exit", 4) == 0) {
         // Sair do jogo
-        printf("\nSaindo do jogo...\n");
         return EXIT_FAILURE;
     } else
         printCommandInstructions();

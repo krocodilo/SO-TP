@@ -14,7 +14,7 @@
 #include "motor_adminConsole.h"
 
 
-Game* game;
+Game* game = NULL;
 Map allMaps[MAX_LEVELS];
 Mutexes mutexes;
 
@@ -23,22 +23,26 @@ void terminate(int exitcode){
     printf("\nTerminating...  ");
     fflush(stdout);
 
-    // todo warn all players
+    if(game != NULL) {
+        terminateAllPlayers(game->players, &game->nPlayers, &mutexes.players, "O Motor terminou.");
 
-    // todo wait for all threads to join ?
+        if( game->gameThreadId != pthread_self() ){
+            pthread_kill(game->gameThreadId, SIGTERM);
+            pthread_join(game->gameThreadId, NULL);
+        }
 
-    pthread_kill(game->gameThreadId, SIGTERM);
+        // Close general pipe
+        if(game->generalPipe > 0)
+            close(game->generalPipe);
+        unlink(GENERAL_PIPE);
 
-    // Close general pipe
-    if(game->generalPipe > 0)
-        close(game->generalPipe);
-    unlink(GENERAL_PIPE);
+        // Close client pipes
+        for(int i = 0; i < game->nPlayers; i++)
+            close(game->players[i].pipe);
 
-    // Close client pipes
-    for(int i = 0; i < game->nPlayers; i++)
-        close(game->players[i].pipe);
+        free(game);
+    }
 
-    free(game);
     printf("Terminated successfully!\n");
     fflush(stdout);
     exit(exitcode);
@@ -73,19 +77,6 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, terminate);
     signal(SIGTERM, terminate);
 
-    // Create and open general pipe
-    game->generalPipe = create_and_open(GENERAL_PIPE, O_RDWR);
-    if (game->generalPipe == -1){
-        perror("\nERRO: nao foi possivel abrir o mecanismo de comunicacao (pipe) geral.\n");
-        terminate(EXIT_FAILURE);
-    } else if (game->generalPipe == -2) {
-        printf("\nJa existe uma instancia do Motor a executar! So e permitido uma!\n");
-        return EXIT_FAILURE;
-    } else if (game->generalPipe == -3) {
-        perror("\nERRO: falha ao criar o mecanismo de comunicacao (pipe) geral.\n");
-        return EXIT_FAILURE;
-    }
-
     // Initialize mutexes
     pthread_mutex_init(&mutexes.currentMap, NULL);
     pthread_mutex_init(&mutexes.players, NULL);
@@ -93,6 +84,19 @@ int main(int argc, char *argv[]) {
     pthread_mutex_init(&mutexes.mBlocks, NULL);
 
     while(true){
+        // Create and open general pipe
+        game->generalPipe = create_and_open(GENERAL_PIPE, O_RDWR);
+        if (game->generalPipe == -1){
+            perror("\nERRO: nao foi possivel abrir o mecanismo de comunicacao (pipe) geral.\n");
+            terminate(EXIT_FAILURE);
+        } else if (game->generalPipe == -2) {
+            printf("\nJa existe uma instancia do Motor a executar! So e permitido uma!\n");
+            return EXIT_FAILURE;
+        } else if (game->generalPipe == -3) {
+            perror("\nERRO: falha ao criar o mecanismo de comunicacao (pipe) geral.\n");
+            return EXIT_FAILURE;
+        }
+
         if( waitForClientsSignUp(gameSettings, game) == EXIT_FAILURE) {
             terminate(EXIT_FAILURE);
         }
@@ -107,7 +111,6 @@ int main(int argc, char *argv[]) {
         pthread_create(&game->gameThreadId, NULL, gameThread, &gameArgs );
 
         // Start admin console thread
-
         CommandsInputThreadArg consoleArgs = {
                 .game = game,
                 .mutexes = &mutexes
@@ -116,6 +119,7 @@ int main(int argc, char *argv[]) {
         pthread_create(&consoleThreadId, NULL, commandsInputThread, &consoleArgs );
 
         pthread_join(game->gameThreadId, NULL);
+        terminateAllPlayers(game->players, &game->nPlayers, &mutexes.players, "O jogo terminou.");
 
         // end commands thread
         pthread_kill(consoleThreadId, SIGTERM);
@@ -123,7 +127,9 @@ int main(int argc, char *argv[]) {
 
         printf("\n\nA iniciar nova ronda!\n");
         resetGame(game);
-        flushPipe(game->generalPipe);
+//        flushPipe(game->generalPipe);
+        close(game->generalPipe);
+        unlink(GENERAL_PIPE);
     }
     terminate(0);
     return 0;
