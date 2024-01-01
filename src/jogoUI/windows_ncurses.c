@@ -7,13 +7,15 @@ int pipeMotor;
 
 void terminate(int exitcode) {
     endwin();
-    printf("\nTerminating...\n");
+    printf("\nA terminar...  ");
 
     GenericRequestMessage msg = {userInfo->pid};
-    writeMessage(pipeMotor, LeaveGame, &msg, sizeof(msg));
+    if( ! writeMessage(pipeMotor, LeaveGame, &msg, sizeof(msg)) )
+        perror("\nErro ao tentar informar o motor da saida");
 
     unlink(userInfo->pipePath);
     close(pipeMotor);
+    printf("Terminou com sucesso!\n");
     fflush(stdout);
     exit(exitcode);
 }

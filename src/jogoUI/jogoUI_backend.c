@@ -92,7 +92,7 @@ void* communicationsThread(void* arg) {
                     break;
                 }
                 char string[MAX_MESSAGE_SIZE*2];
-                sprintf(string, "New message from '%s':\n", msg.from);
+                sprintf(string, "New message from '%s': ", msg.from);
                 strcat(string, msg.message);
 
                 executeCommand(string, windows->notificationwin);
