@@ -35,14 +35,17 @@ void* commandsInputThread(void* arg) {
 
                 // todo kick
 
-                char *aux;
-                aux = (char *)malloc(strlen(targetName) + strlen(" banido") + 1);
-                strcpy(aux,targetName);
-                strcat(aux," banido");
-                printf("\n");
-                puts(aux);
-                printf("\n");
-                free(aux);
+//                char *aux;
+//                aux = (char *)malloc(strlen(targetName) + strlen(" banido") + 1);
+//                strcpy(aux,targetName);
+//                strcat(aux," banido");
+//                printf("\n");
+//                puts(aux);
+//                printf("\n");
+//                free(aux);
+
+
+
             }
             else {
                 printf("\nkick <nome do jogador>\n");

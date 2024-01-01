@@ -7,7 +7,7 @@ Map currentMap;
 
 
 // Função para controlo de teclas
-void controloTeclas(Windows* windows, int generalPipe) {
+void controloTeclas(Windows* windows, int generalPipe, int pid) {
 
     windows-> mapawin = newwin(18,81,0,1);
     windows-> nivelwin = newwin(3,15,18,1);
@@ -34,14 +34,14 @@ void controloTeclas(Windows* windows, int generalPipe) {
             case KEY_DOWN:
             case KEY_LEFT:
             case KEY_RIGHT: {
-                MoveRequestMessage msg = {userInfo.pid, ch};
+                MoveRequestMessage msg = {pid, ch};
                 writeMessage(generalPipe, MoveRequest, &msg, sizeof(msg));
                 break;
             }
             case ' ': {
                 // Se estiver no modo de comando, executa o comando
                 command = comandos(windows->Commandwin);
-                processCommand(command, windows->notificationwin, generalPipe, userInfo.username);
+                processCommand(command, windows->notificationwin, generalPipe);
                 free(command);
                 comandos2(windows->Commandwin);
                 break;
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     keypad(stdscr, TRUE);
     flushinp();     // limpar input
 
-    controloTeclas(&windows, generalPipe);
+    controloTeclas(&windows, generalPipe, userInfo.pid);
 
     endwin();
 

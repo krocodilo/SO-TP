@@ -40,7 +40,7 @@ void nivel(WINDOW *win, int level);
 void executeCommand(char *command,WINDOW *win);
 char* comandos(WINDOW * comandwin);
 void comandos2(WINDOW * comandwin);
-WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const char *senderUsername);
+WINDOW* processCommand(char *command, WINDOW *window, int generalPipe);
 
 
 void drawCharacter(WINDOW *win, Character character);

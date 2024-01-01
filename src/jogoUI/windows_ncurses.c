@@ -219,7 +219,7 @@ void comandos2(WINDOW * comandwin){
 }
 
 // Função para processar comandos do jogador
-WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const char *senderUsername) {
+WINDOW* processCommand(char *command, WINDOW *window, int generalPipe) {
 
 
     if (strncmp(command, "players", 7) == 0) {
@@ -247,7 +247,7 @@ WINDOW* processCommand(char *command, WINDOW *window, int generalPipe, const cha
             }
 
             TextMessage msg;
-            strncpy(msg.from, senderUsername, MAX_PLAYER_NAME);
+            strncpy(msg.from, userInfo->username, MAX_PLAYER_NAME);
             strncpy(msg.message, message, MAX_MESSAGE_SIZE);
 
             if (!writeMessage(userPipe, TextMsg, &msg, sizeof(msg))) {
