@@ -23,6 +23,8 @@ void* communicationsThread(void* arg) {
 
                 mostraMapa(windows->mapawin, *map);
                 nivel(windows->nivelwin, msg.level);
+                pedras(windows->pedraswin, 0);
+                bloqueios(windows->bloqueioswin, 0);
                 break;
             }
             case Move: {

@@ -86,6 +86,8 @@ void* commandsInputThread(void* arg) {
                 pthread_create(&game->mBlocks[game->nMBlocks].threadId, NULL, mobileBlockThread, &mBlockArg );
                 game->nMBlocks++;
             }
+            else
+                printf("Ja atingiu o maximo de bloqueios moveis.");
             pthread_mutex_unlock(&mutx->mBlocks);
         }
 
