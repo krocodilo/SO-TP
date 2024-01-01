@@ -10,12 +10,6 @@ typedef struct {
 } Map;
 
 
-//typedef struct {
-//    int x;
-//    int y;
-//    char symbol;
-//} Character;
-
 typedef struct {
     int x;
     int y;
