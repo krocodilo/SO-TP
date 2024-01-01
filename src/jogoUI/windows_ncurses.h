@@ -25,10 +25,10 @@
 
 
 void terminate(int exitcode);
-void saveUserInfo(SignUpMessage *ptr);
+void saveInfo(SignUpMessage *ptr, int generalPipe);
 void destroy_win(WINDOW *local_win);
 
-void mostraMapa(WINDOW *mapawin, int height, int width, Map map);
+void mostraMapa(WINDOW *mapawin, Map map);
 void pedras(WINDOW *win, int nRocks);
 void bloqueios(WINDOW *win, int nMBlocks);
 void nivel(WINDOW *win, int level);

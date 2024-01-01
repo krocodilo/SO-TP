@@ -21,7 +21,7 @@ void* communicationsThread(void* arg) {
                 }
                 copyMap(map, &msg.map);
 
-                mostraMapa(windows->mapawin, 18, 81, *map);
+                mostraMapa(windows->mapawin, *map);
                 nivel(windows->nivelwin, msg.level);
                 break;
             }
@@ -34,7 +34,7 @@ void* communicationsThread(void* arg) {
 
                 map->cmap[msg.from.y][msg.from.x] = FREE_SPACE;
                 map->cmap[msg.to.y][msg.to.x] = msg.symbol;
-                mostraMapa(windows->mapawin, 18, 81, *map);
+                mostraMapa(windows->mapawin, *map);
                 break;
             }
             case ModifyMap: {
@@ -63,7 +63,7 @@ void* communicationsThread(void* arg) {
 
                 map->cmap[msg.pos.y][msg.pos.x] = msg.symbol;
 
-                mostraMapa(windows->mapawin, 18, 81, *map);
+                mostraMapa(windows->mapawin, *map);
 
                 break;
             }
@@ -100,7 +100,7 @@ void* communicationsThread(void* arg) {
             }
             case Terminate: {
                 clearMap(map);
-                mostraMapa(windows->mapawin, 18, 81, *map);
+                mostraMapa(windows->mapawin, *map);
                 running = false;
                 break;
             }

@@ -17,7 +17,7 @@ void controloTeclas(Windows* windows, int generalPipe, int pid) {
     windows-> notificationwin = newwin(9,65,18,17);
 
 
-    mostraMapa(windows->mapawin, 18, 81, currentMap);
+    mostraMapa(windows->mapawin, currentMap);
     nivel(windows->nivelwin, 0);
     bloqueios(windows->bloqueioswin, 0);
     pedras(windows->pedraswin, 0);
@@ -28,7 +28,9 @@ void controloTeclas(Windows* windows, int generalPipe, int pid) {
 
     int ch;
     int exitRequested = 0;
-    while ((ch = getch()) != 'q') {
+//    while ((ch = getch()) != 'q') {
+    while(true){
+        ch = getch();
         switch (ch) {
             case KEY_UP:
             case KEY_DOWN:
@@ -70,7 +72,6 @@ int main(int argc, char *argv[]) {
     }
 
     SignUpMessage userInfo;
-    saveUserInfo(&userInfo);
     strncpy(userInfo.username, argv[1], MAX_PLAYER_NAME-1);
     strcpy(userInfo.pipePath, PIPE_DIRECTORY);
     strcat(userInfo.pipePath, userInfo.username);
@@ -96,6 +97,7 @@ int main(int argc, char *argv[]) {
     }
 
     userInfo.pid = getpid();
+    saveInfo(&userInfo, generalPipe);
 
     // Enviar inscrição para o motor
     if( ! writeMessage(generalPipe, SignUp, &userInfo, sizeof(userInfo)) ){

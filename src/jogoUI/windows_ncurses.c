@@ -2,19 +2,25 @@
 
 
 SignUpMessage *userInfo;
+int pipeMotor;
 
 
 void terminate(int exitcode) {
     endwin();
     printf("\nTerminating...\n");
 
+    GenericRequestMessage msg = {userInfo->pid};
+    writeMessage(pipeMotor, LeaveGame, &msg, sizeof(msg));
+
     unlink(userInfo->pipePath);
+    close(pipeMotor);
     fflush(stdout);
     exit(exitcode);
 }
 
-void saveUserInfo(SignUpMessage *ptr){
+void saveInfo(SignUpMessage *ptr, int generalPipe){
     userInfo = ptr;
+    pipeMotor = generalPipe;
 }
 
 //apaga window
@@ -26,7 +32,7 @@ void destroy_win(WINDOW *local_win){
 }
 
 //mostra mapa
-void mostraMapa(WINDOW *mapawin, int height, int width, Map map) {
+void mostraMapa(WINDOW *mapawin, Map map) {
     echo();
     curs_set(0);
     box(mapawin,0,0);
