@@ -6,7 +6,7 @@ int readSignupCommands(Game* game);
 bool keepWaiting();
 
 
-int waitForClientsSignUp(GameSettings gameSettings, Game* game){
+int waitForClientsSignUp(GameSettings gameSettings, Game* game, Mutexes *mutx){
     /*
      * Wait for enough players to sign up
      */
@@ -34,7 +34,31 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
 
         if( pipeIsSet(game->generalPipe, &selectHandler) ){
             // Read pipe
-            receiveNewPlayer(game);
+            switch (readNextMessageType(game->generalPipe)) {
+                case SignUp: {
+                    receiveNewPlayer(game);
+                    break;
+                }
+                case LeaveGame: {
+                    GenericRequestMessage msg;
+                    if ( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ) {
+                        perror("\nErro ao ler a proxima mensagem no pipe.");
+                        break;
+                    }
+                    Player *player = getPlayerByPID(msg.pid, game->players, game->nPlayers, &mutx->players);
+                    if(player == NULL){
+                        fprintf(stderr, "\nERRO - recebeu mensagem de um jogador não registado. PID: %d.", msg.pid);
+                        break;
+                    }
+                    char name[MAX_PLAYER_NAME];
+                    strcpy(name, player->username);
+                    // Remove player
+                    removePlayer(player, game->players, &game->nPlayers, &mutx->players);
+                    printf("\nFoi eliminado o jogador %s.\n", name);
+                    break;
+                }
+                default: perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
+            }
         }
 //        if( FD_ISSET(STDIN_FILENO, &selectHandler) ){
         if( pipeIsSet(0, &selectHandler) ){
@@ -52,7 +76,7 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
             if( keepWaiting() ){
                 waitTime.tv_sec = -1;   // remove timeout from select
                 hasTimedOut = true;
-                printf("Em espera por novos jogadores, ate atingir o minimo.");
+                printf("Continuando a espera de novos jogadores, ate atingir o minimo.");
             }
             else
                 return EXIT_FAILURE;
@@ -73,11 +97,10 @@ void receiveNewPlayer(Game* game){
 
     SignUpMessage msg;
 
-    if( readNextMessageType(game->generalPipe) != SignUp ){
-        // todo clean pipe?
-        perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
-        return;
-    }
+//    if( readNextMessageType(game->generalPipe) != SignUp ){
+//        perror("\nErro ao ler o tipo da proxima mensagem no pipe.");
+//        return;
+//    }
 
     if( ! readNextMessage(game->generalPipe, &msg, sizeof(msg)) ){
         perror("\nErro ao ler a proxima mensagem no pipe.");
@@ -120,7 +143,7 @@ void receiveNewPlayer(Game* game){
 void printCommandInstructions() {
     printf("\nComandos disponíveis:\n");
     printf("\t- begin   : Iniciar o jogo\n");
-    printf("\t- players : Exibir informações dos jogadores\n");
+    printf("\t- users   : Listar jogadores inscritos\n");
     printf("\t- end     : Sair do jogo\n");
 }
 
@@ -141,10 +164,13 @@ int readSignupCommands(Game* game) {
         } else
             printf("\nNúmero insuficiente de jogadores para iniciar o jogo. É necessario pelo menos 1 jogador.\n");
     }
-    else if (strncmp(command, "players", 7) == 0) {
+    else if (strncmp(command, "users", 5) == 0) {
         // Exibir informações dos jogadores
-        for (int i = 0; i < game->nPlayers; i++)
-            printf("\nJogador %d: %s\n", i + 1, game->players[i].username);
+        if(game->nPlayers > 0)
+            for (int i = 0; i < game->nPlayers; i++)
+                printf("Jogador #%d: %s\n", i + 1, game->players[i].username);
+        else
+            printf("\nNão existem jogadores inscritos.\n");
         return -1;
     }
     else if (strncmp(command, "end", 3) == 0) {
@@ -168,6 +194,5 @@ bool keepWaiting() {
     if (strcmp(resp, "no") == 0)
         return false;
 
-    printf("Continuando a espera...");
     return true;
 }

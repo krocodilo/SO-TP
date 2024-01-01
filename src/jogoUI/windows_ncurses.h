@@ -25,7 +25,7 @@
 
 
 void terminate(int exitcode);
-void saveInfo(SignUpMessage *ptr, int generalPipe);
+void saveInfo(SignUpMessage *ptr, int generalPipe, bool* orderedTerminateVar);
 void destroy_win(WINDOW *local_win);
 
 void mostraMapa(WINDOW *mapawin, Map map);

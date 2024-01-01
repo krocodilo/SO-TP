@@ -106,8 +106,8 @@ int executeBot(Bot *bot, int period, int duration) {
 void runBots(Game *game, Map *currentMap, Mutexes *mutexes) {
     // Execute bots according to game level
 
-    int period = 10, duration =8;    // todo
-//    int period = 30, duration = 5 + (game->currentLevel * 5);
+//    int period = 10, duration =8;    // testing
+    int period = 30, duration = 5 + (game->currentLevel * 5);
 
     pthread_mutex_lock(&mutexes->bots);
     game->nBots = 0;
@@ -145,8 +145,8 @@ void runBots(Game *game, Map *currentMap, Mutexes *mutexes) {
             continue;
         }
 
-//        period -= 5;  // todo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//        duration -= 5;
+        period -= 5;
+        duration -= 5;
         game->nBots++;
         printf("Bot #%d foi lançado.\n", currentBot->id);
     }

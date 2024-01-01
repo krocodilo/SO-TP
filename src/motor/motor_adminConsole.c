@@ -55,6 +55,16 @@ void* commandsInputThread(void* arg) {
                         fprintf(stderr, "Erro ao enviar mensagem #%d para %s.", terminateMsgType, p->username);
                 pthread_mutex_unlock(&mutx->players);
 
+                // Update map
+                pthread_mutex_lock(&mutx->currentMap);
+                game->currentMap.cmap[p->pos.y][p->pos.x] = FREE_SPACE;
+                pthread_mutex_unlock(&mutx->currentMap);
+
+                // Update clients
+                ModifyMapMessage removePlayerMsg = {p->pos, FREE_SPACE};
+                broadcastMessageToPlayers(game->players, game->nPlayers, ModifyMap, &removePlayerMsg,
+                                          sizeof(removePlayerMsg), &mutx->players);
+
                 // Remove player from array
                 removePlayer(p, game->players, &game->nPlayers, &mutx->players);
             }
@@ -99,11 +109,12 @@ void* commandsInputThread(void* arg) {
 
             pthread_mutex_lock(&mutx->mBlocks);
             pthread_kill(game->mBlocks[0].threadId, SIGTERM);
+            pthread_join(game->mBlocks[0].threadId, NULL);
             Position pos = game->mBlocks[0].pos;
 
             for(int i = 1; i < game->nMBlocks; i++){
                 // If number of mobile blocks is more than 1, shift all back
-                memmove(&game->mBlocks[i-1], &game->mBlocks[i], sizeof(MBlock));
+                memcpy(&game->mBlocks[i-1], &game->mBlocks[i], sizeof(MBlock));
             }
             // If number of mobile blocks is only one, then simply decrease counter
             game->nMBlocks--;

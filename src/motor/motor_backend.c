@@ -2,7 +2,6 @@
 
 
 //bool sendMessageToPlayer(Player *p, int msgType, void * msg, int msgSize, pthread_mutex_t * playersMutex);
-Player* getPlayerByPID(int pid, Player players[], int nPlayers, pthread_mutex_t *playersMutex);
 int executeMoveRequest(Player *p, Map *currentMap, int arrowKey, Game *game, Mutexes *mutx);
 
 
@@ -168,6 +167,8 @@ Player* getPlayerByUsername(char *string, Player players[], int nPlayers, pthrea
 
 
 void removePlayer(Player *p, Player players[], int *nPlayers, pthread_mutex_t *playersMutex) {
+    if(*nPlayers == 0)
+        return;
     pthread_mutex_lock(playersMutex);
     if (p->pid != players[*nPlayers-1].pid) {
         // If player to be removed is not the last in the array
@@ -179,11 +180,11 @@ void removePlayer(Player *p, Player players[], int *nPlayers, pthread_mutex_t *p
             }
             if (shiftBack == true)
                 // Moves element on current index to previous index
-                memmove(&players[i-1], &players[i], sizeof(Player));
+                memcpy(&players[i-1], &players[i], sizeof(Player));
         }
     }
     // If player to be removed is the last, then simply decrese counter of players
-    *nPlayers--;
+    (*nPlayers)--;
     pthread_mutex_unlock(playersMutex);
 }
 

@@ -2,6 +2,7 @@
 
 
 SignUpMessage *userInfo;
+bool* motorOrderedTerminate;
 int pipeMotor;
 
 
@@ -9,9 +10,12 @@ void terminate(int exitcode) {
     endwin();
     printf("\nA terminar...  ");
 
-    GenericRequestMessage msg = {userInfo->pid};
-    if( ! writeMessage(pipeMotor, LeaveGame, &msg, sizeof(msg)) )
-        perror("\nErro ao tentar informar o motor da saida");
+    if(*motorOrderedTerminate != true){
+        // If motor did not order to terminate = game still running = have to warn motor
+        GenericRequestMessage msg = {userInfo->pid};
+        if( ! writeMessage(pipeMotor, LeaveGame, &msg, sizeof(msg)) )
+            perror("\nErro ao tentar informar o motor da saida");
+    }
 
     unlink(userInfo->pipePath);
     close(pipeMotor);
@@ -20,9 +24,10 @@ void terminate(int exitcode) {
     exit(exitcode);
 }
 
-void saveInfo(SignUpMessage *ptr, int generalPipe){
+void saveInfo(SignUpMessage *ptr, int generalPipe, bool* orderedTerminateVar){
     userInfo = ptr;
     pipeMotor = generalPipe;
+    motorOrderedTerminate = orderedTerminateVar;
 }
 
 //apaga window

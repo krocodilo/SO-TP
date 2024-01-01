@@ -28,6 +28,7 @@ typedef struct {
     int myPipe;
     Map * map;
     Windows * windows;
+    bool *motorOrderedTerminate;
 } CommunicationsThreadArg;
 
 #endif

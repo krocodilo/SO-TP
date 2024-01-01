@@ -7,6 +7,7 @@ void* communicationsThread(void* arg) {
     int myPipe = (int) ((CommunicationsThreadArg*) arg)->myPipe;
     Map * map = (Map*) ((CommunicationsThreadArg*) arg)->map;
     Windows * windows = (Windows*) ((CommunicationsThreadArg*) arg)->windows;
+    bool *motorOrderedTerminate = (bool*) ((CommunicationsThreadArg*) arg)->motorOrderedTerminate;
 
     int nRocks = 0, nMBlocks = 0;
     bool running = true;
@@ -49,18 +50,22 @@ void* communicationsThread(void* arg) {
                 if( map->cmap[msg.pos.y][msg.pos.x] == CHAR_ROCK && msg.symbol == FREE_SPACE ){
                     nRocks--;   // if its going to clear a rock
                     pedras(windows->pedraswin, nRocks); // update rock counter
+                    executeCommand("Foi removida uma pedra.", windows->notificationwin);
                 }
                 else if( map->cmap[msg.pos.y][msg.pos.x] == FREE_SPACE && msg.symbol == CHAR_ROCK ){
                     nRocks++;   // If its going to add a rock
                     pedras(windows->pedraswin, nRocks);
+                    executeCommand("Foi adicionada uma pedra.", windows->notificationwin);
                 }
                 else if( map->cmap[msg.pos.y][msg.pos.x] == CHAR_MBLOCKS && msg.symbol == FREE_SPACE ){
                     nMBlocks--;   // if its going to clear a mobile block
                     bloqueios(windows->bloqueioswin, nMBlocks);
+                    executeCommand("Foi removido um bloqueio movel.", windows->notificationwin);
                 }
                 else if ( map->cmap[msg.pos.y][msg.pos.x] == FREE_SPACE && msg.symbol == CHAR_MBLOCKS ){
                     nMBlocks++;
                     bloqueios(windows->bloqueioswin, nMBlocks);
+                    executeCommand("Foi adicionado um bloqueio movel.", windows->notificationwin);
                 }
 
                 map->cmap[msg.pos.y][msg.pos.x] = msg.symbol;
@@ -94,7 +99,7 @@ void* communicationsThread(void* arg) {
                     break;
                 }
                 char string[MAX_MESSAGE_SIZE*2];
-                sprintf(string, "New message from '%s': ", msg.from);
+                sprintf(string, "Nova mensagem de '%s': ", msg.from);
                 strcat(string, msg.message);
 
                 executeCommand(string, windows->notificationwin);
@@ -104,6 +109,7 @@ void* communicationsThread(void* arg) {
                 clearMap(map);
                 mostraMapa(windows->mapawin, *map);
                 running = false;
+                *motorOrderedTerminate = true;
                 break;
             }
             default:

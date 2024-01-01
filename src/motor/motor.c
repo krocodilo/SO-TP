@@ -97,9 +97,10 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
 
-        if( waitForClientsSignUp(gameSettings, game) == EXIT_FAILURE) {
+        if( waitForClientsSignUp(gameSettings, game, &mutexes) == EXIT_FAILURE) {
             terminate(EXIT_FAILURE);
         }
+        fflush(stdout);
 
         // Start game thread
         GameThreadArg gameArgs = {

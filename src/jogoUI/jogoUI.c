@@ -97,7 +97,8 @@ int main(int argc, char *argv[]) {
     }
 
     userInfo.pid = getpid();
-    saveInfo(&userInfo, generalPipe);
+    bool motorOrderedTerminate = false;
+    saveInfo(&userInfo, generalPipe, &motorOrderedTerminate);
 
     // Enviar inscrição para o motor
     if( ! writeMessage(generalPipe, SignUp, &userInfo, sizeof(userInfo)) ){
@@ -118,7 +119,8 @@ int main(int argc, char *argv[]) {
     CommunicationsThreadArg arg = {
             .myPipe = myPipe,
             .map = &currentMap,
-            .windows = &windows
+            .windows = &windows,
+            .motorOrderedTerminate = &motorOrderedTerminate
     };
     pthread_t id;
     if( pthread_create(&id, NULL, communicationsThread, &arg) != 0 ){

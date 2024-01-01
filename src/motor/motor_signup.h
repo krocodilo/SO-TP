@@ -15,9 +15,10 @@
 #include "../common/constants.h"
 #include "../common/messages.h"
 #include "../common/utils.h"
+#include "motor_backend.h"
 
 
-int waitForClientsSignUp(GameSettings gameSettings, Game* game);
+int waitForClientsSignUp(GameSettings gameSettings, Game* game, Mutexes *mutx);
 
 
 #endif //SO_TP_MOTOR_SIGNUP_H

@@ -19,6 +19,7 @@ bool posIsValid(Position pos);
 bool posIsFree(Position pos, Map *map);
 Position randomFreePosition(Map *map, pthread_mutex_t *mapMutex);
 
+Player* getPlayerByPID(int pid, Player players[], int nPlayers, pthread_mutex_t *playersMutex);
 Player* getPlayerByUsername(char *string, Player players[], int nPlayers, pthread_mutex_t *playersMutex);
 void removePlayer(Player *p, Player players[], int *nPlayers, pthread_mutex_t *playersMutex);
 
