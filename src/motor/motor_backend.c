@@ -3,7 +3,6 @@
 
 //bool sendMessageToPlayer(Player *p, int msgType, void * msg, int msgSize, pthread_mutex_t * playersMutex);
 Player* getPlayerByPID(int pid, Player players[], int nPlayers, pthread_mutex_t *playersMutex);
-void removePlayer(Player *p, Player players[], int *nPlayers, pthread_mutex_t *playersMutex);
 int executeMoveRequest(Player *p, Map *currentMap, int arrowKey, Game *game, Mutexes *mutx);
 
 
@@ -148,6 +147,17 @@ Player* getPlayerByPID(int pid, Player players[], int nPlayers, pthread_mutex_t 
     pthread_mutex_lock(playersMutex);
     for(int i = 0; i < nPlayers; i++)
         if(players[i].pid == pid)
+            ptr = &players[i];
+    pthread_mutex_unlock(playersMutex);
+    return ptr;
+}
+
+
+Player* getPlayerByUsername(char *string, Player players[], int nPlayers, pthread_mutex_t *playersMutex) {
+    Player* ptr = NULL;
+    pthread_mutex_lock(playersMutex);
+    for(int i = 0; i < nPlayers; i++)
+        if( strncmp(players[i].username, string, MAX_PLAYER_NAME) == 0 )
             ptr = &players[i];
     pthread_mutex_unlock(playersMutex);
     return ptr;

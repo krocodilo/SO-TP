@@ -4,7 +4,9 @@
 void* mobileBlockThread(void* arg);
 bool positionIsStuck(Position pos, Map* map);
 
-
+void commandsInputThreadSignalHandler() {
+    pthread_exit(NULL);
+}
 void* commandsInputThread(void* arg) {
     Game* game = (Game *) ((CommandsInputThreadArg*) arg)->game;
     Mutexes* mutx = (Mutexes *) ((CommandsInputThreadArg*) arg)->mutexes;
@@ -32,23 +34,32 @@ void* commandsInputThread(void* arg) {
             char *targetName = strtok(NULL, " ");
 
             if (targetName != NULL) {
+                // Get player, if it exists
+                Player *p = getPlayerByUsername(targetName, game->players, game->nPlayers, &mutx->players);
+                if(p == NULL){
+                    printf("Nao existe nenhum utilizador com esse nome.\n");
+                    continue;
+                }
 
-                // todo kick
+                // Inform all players
+                TextMessage msg = {
+                        .from = "Motor"
+                };
+                snprintf(msg.message, MAX_MESSAGE_SIZE, "O jogador '%s' foi banido.", p->username);
+                broadcastMessageToPlayers(game->players, game->nPlayers, TextMsg, &msg, sizeof(msg), &mutx->players);
 
-//                char *aux;
-//                aux = (char *)malloc(strlen(targetName) + strlen(" banido") + 1);
-//                strcpy(aux,targetName);
-//                strcat(aux," banido");
-//                printf("\n");
-//                puts(aux);
-//                printf("\n");
-//                free(aux);
+                // Send termination message
+                int terminateMsgType = Terminate;
+                pthread_mutex_lock(&mutx->players);
+                    if( write(p->pipe, &terminateMsgType, sizeof(int)) != sizeof(int) )
+                        fprintf(stderr, "Erro ao enviar mensagem #%d para %s.", terminateMsgType, p->username);
+                pthread_mutex_unlock(&mutx->players);
 
-
-
+                // Remove player from array
+                removePlayer(p, game->players, &game->nPlayers, &mutx->players);
             }
             else {
-                printf("\nkick <nome do jogador>\n");
+                printf("\nSINTAXE:  kick <nome do jogador>\n");
             }
         }
 
@@ -100,7 +111,7 @@ void* commandsInputThread(void* arg) {
             pthread_mutex_unlock(&mutx->currentMap);
 
             // Update clients
-            ModifyMapMessage removeMBlockMsg = {pos, CHAR_MBLOCKS};
+            ModifyMapMessage removeMBlockMsg = {pos, FREE_SPACE};
             broadcastMessageToPlayers(game->players, game->nPlayers, ModifyMap, &removeMBlockMsg,
                                       sizeof(removeMBlockMsg), &mutx->players);
             printf("\nFoi eliminado o bloqueio movel mais antigo.\n");
@@ -108,7 +119,7 @@ void* commandsInputThread(void* arg) {
 
         else if (strncmp(command, "end", 3) == 0) {
             pthread_kill(game->gameThreadId, SIGTERM);
-            return NULL;
+            pthread_exit((void*)EXIT_SUCCESS);
         }
         else
             printf("Comando inválido.\n");

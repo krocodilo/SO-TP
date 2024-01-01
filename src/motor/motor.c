@@ -123,7 +123,13 @@ int main(int argc, char *argv[]) {
 
         // end commands thread
         pthread_kill(consoleThreadId, SIGTERM);
-        pthread_join(consoleThreadId, NULL);
+        void *res;
+        pthread_join(consoleThreadId, &res);
+//        if(res != NULL){
+////            int resInt = (int)(intptr_t)res;
+////            if( resInt == EXIT_SUCCESS)
+//                terminate(EXIT_SUCCESS);
+//        }
 
         printf("\n\nA iniciar nova ronda!\n");
         resetGame(game);

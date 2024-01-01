@@ -121,7 +121,7 @@ void printCommandInstructions() {
     printf("\nComandos disponíveis:\n");
     printf("\t- begin   : Iniciar o jogo\n");
     printf("\t- players : Exibir informações dos jogadores\n");
-    printf("\t- exit    : Sair do jogo\n");
+    printf("\t- end     : Sair do jogo\n");
 }
 
 //ler comandos
@@ -147,7 +147,7 @@ int readSignupCommands(Game* game) {
             printf("\nJogador %d: %s\n", i + 1, game->players[i].username);
         return -1;
     }
-    else if (strncmp(command, "exit", 4) == 0) {
+    else if (strncmp(command, "end", 3) == 0) {
         // Sair do jogo
         return EXIT_FAILURE;
     } else

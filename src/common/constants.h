@@ -3,7 +3,7 @@
 
 
 // UI Symbols
-#define FREE_SPACE ' '
+#define FREE_SPACE      ' '
 #define CHAR_WALLS      'X'
 #define CHAR_ROCK       'P'
 #define CHAR_MBLOCKS    'B'

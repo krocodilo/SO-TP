@@ -19,6 +19,9 @@ bool posIsValid(Position pos);
 bool posIsFree(Position pos, Map *map);
 Position randomFreePosition(Map *map, pthread_mutex_t *mapMutex);
 
+Player* getPlayerByUsername(char *string, Player players[], int nPlayers, pthread_mutex_t *playersMutex);
+void removePlayer(Player *p, Player players[], int *nPlayers, pthread_mutex_t *playersMutex);
+
 void terminateAllMBlocks(MBlock mBlocks[], int *nMBlocks, pthread_mutex_t *mBlocksMutex);
 void terminateAllBots(Bot bots[], int *nBots, pthread_mutex_t *botsMutex);
 void terminateAllPlayers(Player players[], int *nPlayers, pthread_mutex_t *playersMutex, char *message);
