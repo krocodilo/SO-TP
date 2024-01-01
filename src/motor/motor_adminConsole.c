@@ -75,15 +75,17 @@ void* commandsInputThread(void* arg) {
         else if (strncmp(command, "bmov", 4) == 0) {
             pthread_mutex_lock(&mutx->mBlocks);
 
-            MobileBlockThreadArg mBlockArg = {
-                    .thisMBlock = &game->mBlocks[game->nMBlocks],
-                    .players = game->players,
-                    .nPlayers = &game->nPlayers,
-                    .currentMap = &game->currentMap,
-                    .mutexes = mutx
-            };
-            pthread_create(&game->mBlocks[game->nMBlocks].threadId, NULL, mobileBlockThread, &mBlockArg );
-            game->nMBlocks++;
+            if( game->nMBlocks < MAX_MBLOCKS ){
+                MobileBlockThreadArg mBlockArg = {
+                        .thisMBlock = &game->mBlocks[game->nMBlocks],
+                        .players = game->players,
+                        .nPlayers = &game->nPlayers,
+                        .currentMap = &game->currentMap,
+                        .mutexes = mutx
+                };
+                pthread_create(&game->mBlocks[game->nMBlocks].threadId, NULL, mobileBlockThread, &mBlockArg );
+                game->nMBlocks++;
+            }
             pthread_mutex_unlock(&mutx->mBlocks);
         }
 
