@@ -40,12 +40,13 @@ int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
                 strncpy(infoMsg.from, "Motor", MAX_PLAYER_NAME-1);
 
                 pthread_mutex_lock(&mutx->players);
-                snprintf(infoMsg.message, MAX_MESSAGE_SIZE-1, "Player '%s' has won level %d.", player->username, game->currentLevel);
+                snprintf(infoMsg.message, MAX_MESSAGE_SIZE-1, "O jogador '%s' ganhou o nivel %d.", player->username, game->currentLevel);
                 pthread_mutex_unlock(&mutx->players);
 
                 // Inform all players
                 broadcastMessageToPlayers(game->players, game->nPlayers, TextMsg, &infoMsg,
                                           sizeof(infoMsg), &mutx->players);
+                printf("\n%s\n", infoMsg.message);
                 return 1;
             }
             executeMoveRequest(player, currentMap, msg.arrowKey, game, mutx);
@@ -92,7 +93,7 @@ int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
             strncpy(infoMsg.from, "Motor", MAX_PLAYER_NAME-1);
 
             pthread_mutex_lock(&mutx->players);
-            snprintf(infoMsg.message, MAX_MESSAGE_SIZE-1, "Player %s has left the game.", player->username);
+            snprintf(infoMsg.message, MAX_MESSAGE_SIZE-1, "O jogador %s saiu.", player->username);
             Position playerPos = player->pos;
             pthread_mutex_unlock(&mutx->players);
 
@@ -106,8 +107,10 @@ int handleNewGameMessage(Game *game, Map * currentMap, Mutexes *mutx) {
             // Remove player
             removePlayer(player, game->players, &game->nPlayers, &mutx->players);
 
+            printf("\n%s\n", infoMsg.message);
+
             if( game->nPlayers == 0 ){
-                printf("\nAll players have left the game.");
+                printf("\nNao existem mais jogadores..");
                 return -1;
             }
             break;

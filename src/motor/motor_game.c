@@ -64,7 +64,7 @@ void* gameThread(void* arg) {
 
     game->currentLevel = 1;
     bool gameIsRunning = true;
-    while( gameIsRunning && game->currentLevel <= MAX_LEVELS ) {
+    while( gameIsRunning && game->currentLevel <= MAX_LEVELS && game->nPlayers > 0 ) {
 
         levelDuration -= settings->levelDurationDecreaseSeconds;
         copyMap(currentMap, &allMaps[game->currentLevel-1]);  // create a copy of this level's map, to then be modified
@@ -85,7 +85,7 @@ void* gameThread(void* arg) {
         waitTime.tv_sec = levelDuration;    // Set level timeout
         printf("Motor esta a escuta de mensagens...\n");
         flushPipe(game->generalPipe);
-        while( gameIsRunning && !levelIsWon ) {
+        while( gameIsRunning && !levelIsWon && game->nPlayers > 0 ) {
 //            printf("Time left: %ld\n", waitTime.tv_sec);
             if( selectPipe(&selectHandler, pipesToWatch, 1, &waitTime) == 0) {
                 // Level Timeout
@@ -100,11 +100,9 @@ void* gameThread(void* arg) {
                 // If there's something to read
                 switch( handleNewGameMessage(game, currentMap, mutx) ) {
                     case 1:
-                        printf("Um jogador ganhou este nivel.\n");
                         levelIsWon = true;
                         continue;
                     case -1:
-                        printf("Nao existem mais jogadores.\n");
                         gameIsRunning = false;
                         continue;
                 }
@@ -115,7 +113,6 @@ void* gameThread(void* arg) {
 
         game->currentLevel++;
     }
-    // todo warn all players
 
     terminateGame();
 }
