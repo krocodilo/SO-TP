@@ -103,7 +103,7 @@ void* commandsInputThread(void* arg) {
 
             for(int i = 1; i < game->nMBlocks; i++){
                 // If number of mobile blocks is more than 1, shift all back
-                memmove(&game->mBlocks[i-1], &game->mBlocks[i], sizeof(Player));
+                memmove(&game->mBlocks[i-1], &game->mBlocks[i], sizeof(MBlock));
             }
             // If number of mobile blocks is only one, then simply decrease counter
             game->nMBlocks--;
