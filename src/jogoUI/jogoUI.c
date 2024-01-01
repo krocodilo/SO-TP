@@ -3,11 +3,8 @@
 #include "windows_ncurses.h"
 #include "jogoUI_backend.h"
 
-
+SignUpMessage userInfo;
 Map currentMap;
-
-
-
 
 
 // Função para controlo de teclas
@@ -73,6 +70,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    saveUserInfo(&userInfo);
     strncpy(userInfo.username, argv[1], MAX_PLAYER_NAME-1);
     strcpy(userInfo.pipePath, PIPE_DIRECTORY);
     strcat(userInfo.pipePath, userInfo.username);

@@ -28,6 +28,7 @@
 #define CTRLD 3
 
 void terminate(int exitcode);
+void saveUserInfo(SignUpMessage *ptr);
 void destroy_win(WINDOW *local_win);
 
 void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map);
@@ -61,9 +62,6 @@ typedef struct {
     WINDOW * Commandwin;
     WINDOW * notificationwin;
 } Windows;
-
-SignUpMessage userInfo;
-
 
 
 #endif //SO_TP_WINDOWS_NCURSES_H

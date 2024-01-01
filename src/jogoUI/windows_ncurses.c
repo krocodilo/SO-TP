@@ -1,15 +1,21 @@
 #include "windows_ncurses.h"
 
 
+SignUpMessage *userInfo;
+
+
 void terminate(int exitcode) {
     endwin();
     printf("\nTerminating...\n");
 
-    unlink(userInfo.pipePath);
+    unlink(userInfo->pipePath);
     fflush(stdout);
     exit(exitcode);
 }
 
+void saveUserInfo(SignUpMessage *ptr){
+    userInfo = ptr;
+}
 
 //apaga window
 void destroy_win(WINDOW *local_win){
