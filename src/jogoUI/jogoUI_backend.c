@@ -1,5 +1,8 @@
 #include "jogoUI_backend.h"
 
+
+void clearMap(Map* map);
+
 void* communicationsThread(void* arg) {
     int myPipe = (int) ((CommunicationsThreadArg*) arg)->myPipe;
     Map * map = (Map*) ((CommunicationsThreadArg*) arg)->map;
@@ -18,7 +21,7 @@ void* communicationsThread(void* arg) {
                 }
                 copyMap(map, &msg.map);
 
-                mostraMapa(windows->mapawin, 18, 81, NULL, *map);
+                mostraMapa(windows->mapawin, 18, 81, *map);
                 nivel(windows->nivelwin, msg.level);
                 break;
             }
@@ -31,7 +34,7 @@ void* communicationsThread(void* arg) {
 
                 map->cmap[msg.from.y][msg.from.x] = FREE_SPACE;
                 map->cmap[msg.to.y][msg.to.x] = msg.symbol;
-                mostraMapa(windows->mapawin, 18, 81, NULL, *map);
+                mostraMapa(windows->mapawin, 18, 81, *map);
                 break;
             }
             case ModifyMap: {
@@ -60,7 +63,7 @@ void* communicationsThread(void* arg) {
 
                 map->cmap[msg.pos.y][msg.pos.x] = msg.symbol;
 
-                mostraMapa(windows->mapawin, 18, 81, NULL, *map);
+                mostraMapa(windows->mapawin, 18, 81, *map);
 
                 break;
             }
@@ -96,14 +99,20 @@ void* communicationsThread(void* arg) {
                 break;
             }
             case Terminate: {
+                clearMap(map);
+                mostraMapa(windows->mapawin, 18, 81, *map);
                 running = false;
-//                terminate(EXIT_SUCCESS);
                 break;
             }
             default:
                 executeCommand("Erro ao ler o tipo da proxima mensagem no pipe. Tipo irreconhecível.", windows->notificationwin);
         }
     }
+}
 
-    return NULL;
+
+void clearMap(Map* map) {
+    for(int y = 0; y < MAP_LINES; y++)
+        for(int x = 0; x < MAP_COLS; x++)
+            map->cmap[y][x] = FREE_SPACE;
 }

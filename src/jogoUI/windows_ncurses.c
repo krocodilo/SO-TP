@@ -26,7 +26,7 @@ void destroy_win(WINDOW *local_win){
 }
 
 //mostra mapa
-void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map) {
+void mostraMapa(WINDOW *mapawin, int height, int width, Map map) {
     echo();
     curs_set(0);
     box(mapawin,0,0);
@@ -126,28 +126,6 @@ void nivel(WINDOW *win, int level) {
     refresh();
     wrefresh(win);
 }
-
-//mostra nome de jogadores no mapa numa janela *não é utilizado
-//void jogadores(WINDOW *win, char *playersCommaSeparated) {
-//
-//    box(win,0,0);
-//
-//    start_color();
-//    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-//    init_pair(2, COLOR_CYAN, COLOR_BLACK);
-//    init_color(COLOR_CYAN,0-999,0-999,0-999);
-//
-//    wattron(win,COLOR_PAIR(1));
-//    mvwprintw(win, 1,1,"Jogadores:");
-//    wattroff(win,COLOR_PAIR(1));
-//
-//    wattron(win,COLOR_PAIR(2));
-//    mvwprintw(win, 1, 12, "%s", playersCommaSeparated);
-//    wattroff(win,COLOR_PAIR(2));
-//
-//    refresh();
-//    wrefresh(win);
-//}
 
 //mostra O COMANDO ACIONADO
 void executeCommand(char *command,WINDOW *win) {
@@ -281,47 +259,69 @@ WINDOW* processCommand(char *command, WINDOW *window, int generalPipe) {
     return 0;
 }
 
+//mostra nome de jogadores no mapa numa janela *não é utilizado
+//void jogadores(WINDOW *win, char *playersCommaSeparated) {
+//
+//    box(win,0,0);
+//
+//    start_color();
+//    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+//    init_pair(2, COLOR_CYAN, COLOR_BLACK);
+//    init_color(COLOR_CYAN,0-999,0-999,0-999);
+//
+//    wattron(win,COLOR_PAIR(1));
+//    mvwprintw(win, 1,1,"Jogadores:");
+//    wattroff(win,COLOR_PAIR(1));
+//
+//    wattron(win,COLOR_PAIR(2));
+//    mvwprintw(win, 1, 12, "%s", playersCommaSeparated);
+//    wattroff(win,COLOR_PAIR(2));
+//
+//    refresh();
+//    wrefresh(win);
+//}
+
 // Função para desenhar o personagem na janela
-void drawCharacter(WINDOW *win, Character character) {
-    mvwprintw(win, character.y, character.x, "%c", character.symbol);
-    wrefresh(win);
-}
+//void drawCharacter(WINDOW *win, Character character) {
+//    mvwprintw(win, character.y, character.x, "%c", character.symbol);
+//    wrefresh(win);
+//}
 
 // Função para limpar o rastro do personagem na janela
-void clearCharacter(WINDOW *win, Character character) {
-    mvwprintw(win, character.y, character.x, " ");
-    wrefresh(win);
-}
+//void clearCharacter(WINDOW *win, Character character) {
+//    mvwprintw(win, character.y, character.x, " ");
+//    wrefresh(win);
+//}
 
 // Função para mover o personagem na janela
-void moveCharacter(WINDOW *win, Character *character, int dx, int dy) {
-
-    // Salva as coordenadas atuais antes de mover
-    int oldX = character->x;
-    int oldY = character->y;
-
-    // Calcula as novas coordenadas
-    int newX = oldX + dx;
-    int newY = oldY + dy;
-
-    // Verifica se as novas coordenadas estão dentro dos limites da janela/mapa
-    if (newX >= 0 && newX < 81 && newY >= 0 && newY < 18) {
-        // Limpa a posição anterior do personagem
-        mvwaddch(win, oldY, oldX, ' ');
-
-        // Atualiza as coordenadas do personagem
-        character->x = newX;
-        character->y = newY;
-
-        // Desenha o personagem na nova posição
-        mvwaddch(win, newY, newX, character->symbol);
-
-        // Atualiza a janela
-        wrefresh(win);
-    }
-}
+//void moveCharacter(WINDOW *win, Character *character, int dx, int dy) {
+//
+//    // Salva as coordenadas atuais antes de mover
+//    int oldX = character->x;
+//    int oldY = character->y;
+//
+//    // Calcula as novas coordenadas
+//    int newX = oldX + dx;
+//    int newY = oldY + dy;
+//
+//    // Verifica se as novas coordenadas estão dentro dos limites da janela/mapa
+//    if (newX >= 0 && newX < 81 && newY >= 0 && newY < 18) {
+//        // Limpa a posição anterior do personagem
+//        mvwaddch(win, oldY, oldX, ' ');
+//
+//        // Atualiza as coordenadas do personagem
+//        character->x = newX;
+//        character->y = newY;
+//
+//        // Desenha o personagem na nova posição
+//        mvwaddch(win, newY, newX, character->symbol);
+//
+//        // Atualiza a janela
+//        wrefresh(win);
+//    }
+//}
 
 //elimina Caracter
-void destroyCharacter(Character *character) {
-    free(character);
-}
+//void destroyCharacter(Character *character) {
+//    free(character);
+//}

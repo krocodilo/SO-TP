@@ -17,7 +17,7 @@ void controloTeclas(Windows* windows, int generalPipe, int pid) {
     windows-> notificationwin = newwin(9,65,18,17);
 
 
-    mostraMapa(windows->mapawin, 18, 81, NULL, currentMap);
+    mostraMapa(windows->mapawin, 18, 81, currentMap);
     nivel(windows->nivelwin, 0);
     bloqueios(windows->bloqueioswin, 0);
     pedras(windows->pedraswin, 0);

@@ -55,7 +55,7 @@ int waitForClientsSignUp(GameSettings gameSettings, Game* game){
                 printf("Em espera por novos jogadores, ate atingir o minimo.");
             }
             else
-                break;
+                return EXIT_FAILURE;
         }
         else if( sval == -1 )
             perror("\n\nErro na espera de jogadores.");

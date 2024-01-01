@@ -33,8 +33,3 @@ clean: clean_objects
 
 clean_objects:
 	rm -f ./*.o
-
-
-
-jogoUI2: utils.o $(jogoUI_dir)/* $(common_dir)/*
-	gcc $(jogoUI_dir)/jogoUI2.c utils.o motor_init.o -o jogoUI2

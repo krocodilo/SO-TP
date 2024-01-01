@@ -23,15 +23,12 @@
 
 #define SPACING_FACTOR 2
 
-// Menu inicial
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define CTRLD 3
 
 void terminate(int exitcode);
 void saveUserInfo(SignUpMessage *ptr);
 void destroy_win(WINDOW *local_win);
 
-void mostraMapa(WINDOW *mapawin, int height, int width, Character* player, Map map);
+void mostraMapa(WINDOW *mapawin, int height, int width, Map map);
 void pedras(WINDOW *win, int nRocks);
 void bloqueios(WINDOW *win, int nMBlocks);
 void nivel(WINDOW *win, int level);
@@ -43,13 +40,10 @@ void comandos2(WINDOW * comandwin);
 WINDOW* processCommand(char *command, WINDOW *window, int generalPipe);
 
 
-void drawCharacter(WINDOW *win, Character character);
-void clearCharacter(WINDOW *win, Character character);
-void moveCharacter(WINDOW *win, Character *character, int dx, int dy);
-void destroyCharacter(Character *character);
-
-//int validatePlayerName(Player activePlayers[], int numActivePlayers, char *name);
-//void listBots(Game *game);
+//void drawCharacter(WINDOW *win, Character character);
+//void clearCharacter(WINDOW *win, Character character);
+//void moveCharacter(WINDOW *win, Character *character, int dx, int dy);
+//void destroyCharacter(Character *character);
 
 
 

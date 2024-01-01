@@ -68,7 +68,7 @@ void* gameThread(void* arg) {
 
         levelDuration -= settings->levelDurationDecreaseSeconds;
         copyMap(currentMap, &allMaps[game->currentLevel-1]);  // create a copy of this level's map, to then be modified
-        printf("\nIniciou o nivel %d. Duração: %d\n", game->currentLevel, levelDuration);
+        printf("\nIniciou o nivel %d. Duração: %ds\n", game->currentLevel, levelDuration);
 
         // Initialize player positions in current map
         initializePlayerPositions(game->players, game->nPlayers, currentMap, mutx);
