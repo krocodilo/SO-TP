@@ -8,7 +8,7 @@ int pipeMotor;
 
 void terminate(int exitcode) {
     endwin();
-    printf("\nA terminar...  ");
+    printf("\nA terminar...\n");
 
     if(*motorOrderedTerminate != true){
         // If motor did not order to terminate = game still running = have to warn motor
@@ -19,7 +19,6 @@ void terminate(int exitcode) {
 
     unlink(userInfo->pipePath);
     close(pipeMotor);
-    printf("Terminou com sucesso!\n");
     fflush(stdout);
     exit(exitcode);
 }

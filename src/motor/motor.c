@@ -20,7 +20,7 @@ Mutexes mutexes;
 
 
 void terminate(int exitcode){
-    printf("\nA terminar...  ");
+    printf("\nA terminar...\n");
     fflush(stdout);
 
     if(game != NULL) {
@@ -42,8 +42,6 @@ void terminate(int exitcode){
 
         free(game);
     }
-
-    printf("Terminou com sucesso!\n");
     fflush(stdout);
     exit(exitcode);
 }
